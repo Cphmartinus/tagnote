@@ -332,6 +332,12 @@
     for (let r = 0; r < rows - (header ? 1 : 0); r++) s += '    <tr>' + Array.from({ length: cols }, () => '<td></td>').join('') + '</tr>\n';
     return s + '  </tbody>\n</table>';
   };
+  /* Ny, tom side: gyldig HTML5 med en overskrift og et afsnit, man kan skrive direkte i */
+  snip.blank = (title, lang) => {
+    const head = '<!DOCTYPE html>\n<html lang="' + (lang || 'da') + '">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>' + esc(title) + '</title>\n</head>\n<body>\n  ';
+    const text = head + '<h1>' + esc(t('Overskrift')) + '</h1>\n  <p>' + esc(t('Skriv din tekst her.')) + '</p>\n</body>\n</html>\n';
+    return { text, caret: head.length };
+  };
   snip.skeleton = (title, lang) => `<!DOCTYPE html>\n<html lang="${lang || 'da'}">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>${esc(title || 'Min side')}</title>\n</head>\n<body>\n  <header>\n    <h1>${esc(title || 'Min side')}</h1>\n  </header>\n  <main>\n    <p>Skriv her.</p>\n  </main>\n  <footer>\n    <p>&copy; 2026</p>\n  </footer>\n</body>\n</html>\n`;
   snip.sections = {
     header: '<header>\n  <h1>Titel</h1>\n</header>',

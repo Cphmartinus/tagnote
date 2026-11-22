@@ -92,7 +92,11 @@
 
   /* ---------- dokumentfaner ---------- */
   let nextId = 1, untitledN = 1; const docs = []; let curId = 0;
-  const newDoc = () => ({ id: nextId++, path: null, untitled: t('Side') + untitledN, untitledNo: untitledN++, text: '', saved: '', lastSnap: '', sel: [0, 0], scroll: 0, js: 'off' });
+  const newDoc = () => {
+    const name = t('Side') + untitledN;
+    const b = TN.snip.blank(name, I18N.lang());
+    return { id: nextId++, path: null, untitled: name, untitledNo: untitledN++, text: b.text, saved: b.text, lastSnap: b.text, sel: [b.caret, b.caret], scroll: 0, js: 'off' };
+  };
   const current = () => docs.find((d) => d.id === curId);
   function stash() { const d = current(); if (!d) return; Object.assign(d, { path: state.path, untitled: state.untitled, untitledNo: state.untitledNo, saved: state.saved, lastSnap: state.lastSnap, text: ed.value, sel: [ed.selectionStart, ed.selectionEnd], scroll: ed.scrollTop, js: state.js }); }
   function restore(d) {
@@ -106,7 +110,7 @@
   const docLabel = (d) => (d.id === curId ? docName() : d.path ? d.path.split(/[\\/]/).pop() : d.untitled);
   function activate(id) { if (id === curId) return; const d = docs.find((x) => x.id === id); if (!d) return; stash(); restore(d); }
   function newTab(text) { stash(); const d = newDoc(); docs.push(d); restore(d); if (text != null) { loadDoc(text, null); } return d; }
-  const isPristine = () => !state.path && ed.value === state.saved && (ed.value === '' || ed.value === WELCOME);
+  const isPristine = () => !state.path && ed.value === state.saved; // ny eller urørt side uden fil
   function openInTab(content, path) {
     const existing = path && (docs.find((d) => d.id !== curId && d.path === path) || (state.path === path ? current() : null));
     if (existing) { activate(existing.id); return false; }
