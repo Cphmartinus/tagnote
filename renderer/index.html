@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="da" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; frame-src 'self'; connect-src 'none'; object-src 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Side1 – TagNote</title>
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="tagnote.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- Hurtig adgang + titel -->
+  <header id="titlebar">
+    <div class="qat">
+      <img class="appicon" src="/build/icon.png" alt="" width="18" height="18">
+      <button class="qb" data-cmd="new" data-tip="Nyt dokument|Ctrl+N"><i data-i="new"></i></button>
+      <button class="qb" data-cmd="open" data-tip="Åbn…|Ctrl+O"><i data-i="open"></i></button>
+      <button class="qb" data-cmd="save" data-tip="Gem|Ctrl+S"><i data-i="save"></i></button>
+      <span class="qsep"></span>
+      <button class="qb" data-cmd="undo" data-tip="Fortryd|Ctrl+Z"><i data-i="undo"></i></button>
+      <button class="qb" data-cmd="redo" data-tip="Gentag|Ctrl+Y"><i data-i="redo"></i></button>
+    </div>
+    <div id="doctitle">Side1 – TagNote</div>
+    <div class="qat-right"><span id="savedState"></span></div>
+  </header>
+
+  <!-- Faneblade -->
+  <nav id="tabs" role="tablist">
+    <button class="tab file" data-tab="file" role="tab">Filer</button>
+    <button class="tab active" data-tab="home" role="tab">Hjem</button>
+    <button class="tab" data-tab="insert" role="tab">Indsæt</button>
+    <button class="tab" data-tab="view" role="tab">Visning</button>
+    <button class="tab" data-tab="design" role="tab">Design</button>
+    <button class="tab" data-tab="effects" role="tab">Effekter</button>
+    <span id="fwTabs"></span>
+    <button class="tab" data-tab="tools" role="tab">Eksport &amp; Værktøjer</button>
+    <button class="tab" data-tab="help" role="tab">Hjælp</button>
+    <span class="spacer"></span>
+    <button id="collapseBtn" class="qb" data-cmd="toggleRibbon" data-tip="Skjul båndet|Ctrl+F1"><i data-i="chevup"></i></button>
+  </nav>
+
+  <!-- Bånd -->
+  <section id="ribbon">
+
+    <!-- Filer -->
+    <div class="panel" data-panel="file" hidden>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="new" data-tip="Nyt dokument|Ctrl+N"><i data-i="new"></i><span>Ny</span></button>
+          <button class="rb big" data-cmd="open" data-tip="Åbn en HTML-fil|Ctrl+O"><i data-i="open"></i><span>Åbn</span></button>
+          <button class="rb big" data-cmd="save" data-tip="Gem|Ctrl+S"><i data-i="save"></i><span>Gem</span></button>
+          <button class="rb big" data-cmd="saveAs" data-tip="Gem som…|Ctrl+Shift+S"><i data-i="saveas"></i><span>Gem som</span></button>
+        </div>
+        <div class="label">Dokument</div>
+      </div>
+      <div class="group grow">
+        <div class="items col recent" id="recentList"><span class="muted">Ingen seneste filer</span></div>
+        <div class="label">Seneste filer</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="reveal" data-tip="Vis filen i Stifinder"><i data-i="open"></i><span>Vis i mappe</span></button>
+          <button class="rb big" data-cmd="about" data-tip="Om TagNote"><i data-i="info"></i><span>Om</span></button>
+        </div>
+        <div class="label">Info</div>
+      </div>
+    </div>
+
+    <!-- Hjem -->
+    <div class="panel" data-panel="home">
+      <div class="group">
+        <div class="items col">
+          <div class="row">
+            <select id="headingSel" class="sel wide" data-tip="Blokformat|Ctrl+Alt+1–6|<h1>…</h1>">
+              <option value="p">Afsnit</option>
+              <option value="h1">Overskrift 1</option><option value="h2">Overskrift 2</option><option value="h3">Overskrift 3</option>
+              <option value="h4">Overskrift 4</option><option value="h5">Overskrift 5</option><option value="h6">Overskrift 6</option>
+              <option value="div">Boks (div)</option>
+            </select>
+            <input type="color" id="textColor" class="clr" value="#1b1b1b" data-tip="Tekstfarve|Gælder markeret tekst i visningen">
+            <input type="color" id="bgColor" class="clr" value="#fff3a3" data-tip="Fremhævningsfarve|Baggrund bag markeret tekst">
+          </div>
+          <div class="row">
+            <button class="rb sm" data-cmd="bold" data-tip="Fed|Ctrl+B|<strong>tekst</strong>"><b>B</b></button>
+            <button class="rb sm" data-cmd="italic" data-tip="Kursiv|Ctrl+I|<em>tekst</em>"><i class="t">I</i></button>
+            <button class="rb sm" data-cmd="underline" data-tip="Understreget|Ctrl+U|<u>tekst</u>"><u>U</u></button>
+            <button class="rb sm" data-cmd="strike" data-tip="Gennemstreget|Ctrl+Shift+X|<s>tekst</s>"><s>S</s></button>
+            <button class="rb sm" data-cmd="sub" data-tip="Sænket skrift|<sub>tekst</sub>"><span class="sm-t">x<sub>2</sub></span></button>
+            <button class="rb sm" data-cmd="sup" data-tip="Hævet skrift|<sup>tekst</sup>"><span class="sm-t">x<sup>2</sup></span></button>
+          </div>
+        </div>
+        <div class="label">Tekst</div>
+      </div>
+      <div class="group">
+        <div class="items col">
+          <div class="row">
+            <button class="rb sm" data-cmd="ul" data-tip="Punktopstilling|Ctrl+Shift+8|<ul><li>…</li></ul>"><i data-i="ul"></i></button>
+            <button class="rb sm" data-cmd="ol" data-tip="Nummereret liste|Ctrl+Shift+7|<ol><li>…</li></ol>"><i data-i="ol"></i></button>
+            <button class="rb sm" data-cmd="indent" data-tip="Indryk|Tab"><i data-i="indent"></i></button>
+            <button class="rb sm" data-cmd="outdent" data-tip="Fjern indrykning|Shift+Tab"><i data-i="outdent"></i></button>
+          </div>
+          <div class="row">
+            <button class="rb sm" data-cmd="alignLeft" data-tip="Venstrejusteret|text-align: left"><i data-i="alignl"></i></button>
+            <button class="rb sm" data-cmd="alignCenter" data-tip="Centreret|text-align: center"><i data-i="alignc"></i></button>
+            <button class="rb sm" data-cmd="alignRight" data-tip="Højrejusteret|text-align: right"><i data-i="alignr"></i></button>
+            <button class="rb sm" data-cmd="alignJustify" data-tip="Lige margener|text-align: justify"><i data-i="alignj"></i></button>
+          </div>
+        </div>
+        <div class="label">Afsnit</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="quote" data-tip="Citat|Ctrl+Shift+Q|<blockquote>…</blockquote>"><i data-i="quote"></i><span>Citat</span></button>
+          <button class="rb big" data-cmd="code" data-tip="Indlejret kode|Ctrl+E|<code>kode</code>"><i data-i="code"></i><span>Kode</span></button>
+          <button class="rb big" data-cmd="codeblock" data-tip="Kodeblok|Ctrl+Shift+E|<pre><code>…</code></pre>"><i data-i="codeblock"></i><span>Kodeblok</span></button>
+          <button class="rb big" data-cmd="clearFmt" data-tip="Fjern formatering|Fjerner fed, kursiv, farver m.m. fra markeringen"><i data-i="clear"></i><span>Ryd format</span></button>
+        </div>
+        <div class="label">Blokke</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="beautify" data-tip="Formatér kode|Ctrl+Shift+F|Rydder op i indrykning og linjeskift"><i data-i="wand"></i><span>Formatér kode</span></button>
+          <button class="rb big" data-cmd="toggleComment" data-tip="Kommentér ind/ud|Ctrl+/|<!-- … -->"><i data-i="comment"></i><span>Kommentér</span></button>
+          <button class="rb big" data-cmd="wrapTag" data-tip="Omslut med tag|Ctrl+Alt+T|Omslutter markeringen med et valgfrit tag"><i data-i="tag"></i><span>Omslut med tag</span></button>
+        </div>
+        <div class="label">Kode</div>
+      </div>
+    </div>
+
+    <!-- Indsæt -->
+    <div class="panel" data-panel="insert" hidden>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="table" data-tip="Tabel|Interaktiv tabelbygger|<table>…</table>"><i data-i="table"></i><span>Tabel</span></button>
+          <button class="rb big" data-cmd="image" data-tip="Billede|Vælg fil eller træk og slip. Relativ sti indsættes automatisk|<img src alt>"><i data-i="image"></i><span>Billede</span></button>
+          <button class="rb big" data-cmd="link" data-tip="Link|Ctrl+K|<a href>"><i data-i="link"></i><span>Link</span></button>
+        </div>
+        <div class="label">Tabeller, billeder og links</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="menuSections" data-tip="Sektioner|header, nav, main, section, article, aside, footer, div"><i data-i="layout"></i><span>Sektion ▾</span></button>
+          <button class="rb big" data-cmd="menuForms" data-tip="Formular|Formular og felter"><i data-i="form"></i><span>Formular ▾</span></button>
+          <button class="rb big" data-cmd="menuMedia" data-tip="Medier|Video, lyd og indlejret side"><i data-i="video"></i><span>Medier ▾</span></button>
+          <button class="rb big" data-cmd="button" data-tip="Knap|<button>…</button>"><i data-i="button"></i><span>Knap</span></button>
+        </div>
+        <div class="label">Blokke</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="skeleton" data-tip="Ny HTML5-side|Indsætter en komplet, tom side (erstatter alt)"><i data-i="page"></i><span>Tom side</span></button>
+          <button class="rb big" data-cmd="metaTags" data-tip="Metatags|Titel, beskrivelse, viewport, sprog, farve"><i data-i="meta"></i><span>Metatags</span></button>
+          <button class="rb big" data-cmd="stylesheet" data-tip="Stilark|<link rel=&quot;stylesheet&quot;>"><i data-i="css"></i><span>Stilark</span></button>
+          <button class="rb big" data-cmd="script" data-tip="Script|<script src>"><i data-i="js"></i><span>Script</span></button>
+        </div>
+        <div class="label">Side og head</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="comment" data-tip="Kommentar|Ctrl+Alt+M|<!-- kommentar -->"><i data-i="newcomment"></i><span>Kommentar</span></button>
+          <button class="rb big" data-cmd="hr" data-tip="Vandret linje|<hr>"><i data-i="hr"></i><span>Linje</span></button>
+          <button class="rb big" data-cmd="symbol" data-tip="Tegn og symboler|&amp;copy; &amp;euro; &amp;nbsp; m.fl."><i data-i="sigma"></i><span>Symbol</span></button>
+        </div>
+        <div class="label">Andet</div>
+      </div>
+    </div>
+
+    <!-- Visning -->
+    <div class="panel" data-panel="view" hidden>
+      <div class="group">
+        <div class="items">
+          <button class="rb big mode" data-mode="raw" data-tip="Kildekode|Kun HTML-koden med farvemarkering"><i data-i="raw"></i><span>Kode</span></button>
+          <button class="rb big mode" data-mode="split" data-tip="Kode og visning|Kode og side ved siden af – holdes synkroniseret"><i data-i="split"></i><span>Kode + visning</span></button>
+          <button class="rb big mode" data-mode="read" data-tip="Visning|Siden i fuld størrelse. Du kan stadig rette direkte i teksten"><i data-i="eye"></i><span>Visning</span></button>
+        </div>
+        <div class="label">Tilstande</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big dev on" data-w="0" data-tip="Fuld bredde|Siden fylder hele visningen"><i data-i="expand"></i><span>Fuld</span></button>
+          <button class="rb big dev" data-w="1280" data-tip="Skrivebord|1280 px bred"><i data-i="desktop"></i><span>1280</span></button>
+          <button class="rb big dev" data-w="768" data-tip="Tablet|768 px bred"><i data-i="tablet"></i><span>768</span></button>
+          <button class="rb big dev" data-w="390" data-tip="Telefon|390 px bred"><i data-i="phone"></i><span>390</span></button>
+          <div class="items col w-custom">
+            <label class="chk">Bredde <input type="number" id="devW" class="num" min="240" max="3000" step="10" value="1024"> px</label>
+          </div>
+        </div>
+        <div class="label">Skærmbredde</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <div class="items col jsbox">
+            <div class="seg" id="jsSeg" role="radiogroup" aria-label="JavaScript i visningen">
+              <button data-js="off" data-tip="JavaScript fra|Scripts i siden kører ikke. Det er den sikre standard, og den giver visuel redigering">Slukket</button>
+              <button data-js="known" data-tip="Kun kendte scripts|Kun scripts fra kendte biblioteker (Bootstrap, Tailwind m.fl.) må køre. Egne scripts i siden blokeres">Kendte</button>
+              <button data-js="on" data-tip="JavaScript til|Alle scripts i siden kører. Brug kun til filer, du stoler på">Tændt</button>
+            </div>
+            <label class="chk"><input type="checkbox" id="optJsFile"> Husk for denne fil</label>
+          </div>
+        </div>
+        <div class="label">JavaScript i visning</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big theme" data-set-theme="light" data-tip="Lyst tema"><i class="sw sw-light"></i><span>Lys</span></button>
+          <button class="rb big theme" data-set-theme="dark" data-tip="Mørkt tema"><i class="sw sw-dark"></i><span>Mørk</span></button>
+          <button class="rb big theme" data-set-theme="sepia" data-tip="Papiragtigt sepia-tema"><i class="sw sw-sepia"></i><span>Sepia</span></button>
+          <button class="rb big theme" data-set-theme="wordblue" data-tip="Klassisk Word Blue"><i class="sw sw-blue"></i><span>Word Blue</span></button>
+        </div>
+        <div class="label">Temaer</div>
+      </div>
+      <div class="group">
+        <div class="items col">
+          <label class="chk"><input type="checkbox" id="optEdit" checked> Ret direkte i visningen</label>
+          <label class="chk"><input type="checkbox" id="optNav"> Disposition</label>
+          <label class="chk"><input type="checkbox" id="optSync" checked> Synkron rulning</label>
+          <label class="chk"><input type="checkbox" id="optWrap" checked> Linjeombrydning</label>
+        </div>
+        <div class="label">Vis</div>
+      </div>
+      <div class="group">
+        <div class="items col">
+          <div class="row"><span class="muted">Zoom</span><input type="range" id="zoom" min="60" max="200" step="10" value="100"><span id="zoomVal" class="muted">100 %</span></div>
+        </div>
+        <div class="label">Zoom</div>
+      </div>
+    </div>
+
+    <!-- Design -->
+    <div class="panel" data-panel="design" hidden>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="inspector" data-tip="Stilpanel|Ret farver, tekst, afstande, kanter og layout for det markerede element"><i data-i="sliders"></i><span>Stilpanel</span></button>
+          <button class="rb big" data-cmd="selectParent" data-tip="Vælg overordnet element|Alt+↑|Markerer elementet omkring det valgte"><i data-i="up"></i><span>Overordnet</span></button>
+          <button class="rb big" data-cmd="copySelector" data-tip="Kopiér CSS-vælger|Vælger for det markerede element"><i data-i="copy"></i><span>Kopiér vælger</span></button>
+        </div>
+        <div class="label">Element</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="vars" data-tip="CSS-variabler|Se og ret --variabler på :root"><i data-i="vars"></i><span>Variabler</span></button>
+          <button class="rb big" data-cmd="palette" data-tip="Farvepalet|Lav lyse og mørke nuancer ud fra én farve, som CSS-variabler"><i data-i="palette"></i><span>Farvepalet</span></button>
+          <button class="rb big" data-cmd="fluid" data-tip="Flydende størrelse|Beregner clamp() til skrift og afstande, der vokser med skærmen"><i data-i="clamp"></i><span>Flydende størrelse</span></button>
+        </div>
+        <div class="label">Stil for hele siden</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="menuFrameworks" data-tip="Tilføj framework|Bootstrap, Tailwind CSS, Bulma eller Pico. Indsætter det rigtige link i head"><i data-i="boxes"></i><span>Framework ▾</span></button>
+          <button class="rb big" data-cmd="menuFonts" data-tip="Skrifttype|Vælg et skrifttypepar og få link og font-family indsat"><i data-i="font"></i><span>Skrifttyper</span></button>
+        </div>
+        <div class="label">Biblioteker</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="lint" data-tip="Kontrollér siden|Finder manglende alt-tekster, titel, sprog, dublerede id'er og ukendte framework-klasser"><i data-i="check"></i><span>Kontrol</span></button>
+        </div>
+        <div class="label">Kvalitet</div>
+      </div>
+    </div>
+
+    <!-- Effekter -->
+    <div class="panel" data-panel="effects" hidden>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="fxScroll" data-tip="Scroll-animation|Elementer, der toner ind, glider eller skalerer, mens man ruller. Ren CSS, ingen JavaScript"><i data-i="scroll"></i><span>Scroll-animation</span></button>
+          <button class="rb big" data-cmd="fxHover" data-tip="Overgang ved hover|Glidende ændring, når musen går hen over et element"><i data-i="hover"></i><span>Hover-overgang</span></button>
+          <button class="rb big" data-cmd="fxKeyframes" data-tip="Animation|Færdige gentagne animationer: puls, svæv, rotér m.fl."><i data-i="anim"></i><span>Animation</span></button>
+        </div>
+        <div class="label">Bevægelse</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="fxGradient" data-tip="Gradient|Lineær, radial og konisk farveovergang"><i data-i="gradient"></i><span>Gradient</span></button>
+          <button class="rb big" data-cmd="fxShadow" data-tip="Skygge|Lagdelte, bløde skygger"><i data-i="shadow"></i><span>Skygge</span></button>
+          <button class="rb big" data-cmd="fxGlass" data-tip="Glaseffekt|Frostet baggrund med backdrop-filter"><i data-i="glass"></i><span>Glas</span></button>
+        </div>
+        <div class="label">Overflade</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="fxSnap" data-tip="Scroll-snap|Sektioner, der låser sig fast, når man ruller"><i data-i="snap"></i><span>Scroll-snap</span></button>
+          <button class="rb big" data-cmd="fxSticky" data-tip="Fastholdt element|position: sticky, fx en menu der bliver stående"><i data-i="pin"></i><span>Fastholdt</span></button>
+          <button class="rb big" data-cmd="fxProgress" data-tip="Læsefremgang|En bjælke øverst, der viser, hvor langt man er nået"><i data-i="progress"></i><span>Læsefremgang</span></button>
+        </div>
+        <div class="label">Interaktion uden JavaScript</div>
+      </div>
+      <div class="group">
+        <div class="items col fxinfo">
+          <span class="muted" id="fxSupport">Støtte i visningen kontrolleres…</span>
+        </div>
+        <div class="label">Browserstøtte</div>
+      </div>
+    </div>
+
+    <!-- Framework: Byg og Stil bygges af frameworks.js -->
+    <div class="panel" data-panel="fw-build" hidden></div>
+    <div class="panel" data-panel="fw-style" hidden></div>
+
+    <!-- Hjælp -->
+    <div class="panel" data-panel="help" hidden>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="help" data-tip="Hjælp|F1"><i data-i="help"></i><span>Hjælp</span></button>
+          <button class="rb big" data-cmd="shortcuts" data-tip="Genveje|Oversigt"><i data-i="keyboard"></i><span>Genveje</span></button>
+          <button class="rb big" data-cmd="about" data-tip="Om TagNote|Version og licens"><i data-i="info"></i><span>Om TagNote</span></button>
+        </div>
+        <div class="label">Hjælp</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="reportIssue" data-tip="Rapportér et problem|Opret en sag på GitHub, hvis du har et spørgsmål eller har fundet en fejl"><i data-i="bug"></i><span>Rapportér et problem</span></button>
+          <button class="rb big" data-cmd="projectPage" data-tip="Projektside|Åbn TagNotes side på GitHub"><i data-i="web"></i><span>Projektside</span></button>
+        </div>
+        <div class="label">Support</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <div class="lang-pick"><i data-i="globe"></i><select id="langSel2" class="sel wide" aria-label="Sprog / Language" title="Sprog / Language"></select></div>
+        </div>
+        <div class="label">Sprog</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="checkUpdate" data-tip="Søg efter opdateringer|Tjekker GitHub for en nyere version af TagNote"><i data-i="update"></i><span>Søg efter opdateringer</span></button>
+          <div class="upd-col">
+            <label class="chk"><input type="checkbox" id="optUpdates"> Søg automatisk efter opdateringer</label>
+            <span class="muted" id="verLabel"></span>
+          </div>
+        </div>
+        <div class="label">Opdateringer</div>
+      </div>
+    </div>
+
+    <!-- Eksport & Værktøjer -->
+    <div class="panel" data-panel="tools" hidden>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="exportPdf" data-tip="Eksportér til PDF|Siden udskrives uden scripts"><i data-i="pdf"></i><span>PDF</span></button>
+          <button class="rb big" data-cmd="exportHtml" data-tip="Gem en ren, formateret kopi som HTML"><i data-i="html"></i><span>Ren HTML</span></button>
+          <button class="rb big" data-cmd="exportMd" data-tip="Konvertér siden til Markdown|Til brug i MarkNote og andre markdown-programmer"><i data-i="md"></i><span>Markdown</span></button>
+          <button class="rb big" data-cmd="exportTxt" data-tip="Gem den synlige tekst som .txt"><i data-i="txt"></i><span>Tekst</span></button>
+        </div>
+        <div class="label">Eksportér til</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="history" data-tip="Versionshistorik|Automatiske snapshots, kan gendannes"><i data-i="history"></i><span>Versionshistorik</span></button>
+          <button class="rb big" data-cmd="snapshot" data-tip="Gem et snapshot nu"><i data-i="camera"></i><span>Snapshot nu</span></button>
+        </div>
+        <div class="label">Versioner</div>
+      </div>
+      <div class="group">
+        <div class="items">
+          <button class="rb big" data-cmd="find" data-tip="Find|Ctrl+F"><i data-i="find"></i><span>Find</span></button>
+          <button class="rb big" data-cmd="replace" data-tip="Find og erstat (regex)|Ctrl+H"><i data-i="replace"></i><span>Erstat</span></button>
+        </div>
+        <div class="label">Søgning</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Find og erstat -->
+  <div id="findbar" hidden>
+    <div class="fr">
+      <input id="findIn" placeholder="Find" spellcheck="false">
+      <button class="fb" id="fPrev" title="Forrige (Shift+F3)">▲</button>
+      <button class="fb" id="fNext" title="Næste (F3)">▼</button>
+      <label class="chk" title="Regulært udtryk"><input type="checkbox" id="fRegex"> .*</label>
+      <label class="chk" title="Versalfølsom"><input type="checkbox" id="fCase"> Aa</label>
+      <label class="chk" title="Hele ord"><input type="checkbox" id="fWord"> Ord</label>
+      <span id="fCount" class="muted"></span>
+      <button class="fb x" id="fClose" title="Luk (Esc)">✕</button>
+    </div>
+    <div class="fr" id="replaceRow">
+      <input id="replIn" placeholder="Erstat med" spellcheck="false">
+      <button class="fb t" id="fRepl">Erstat</button>
+      <button class="fb t" id="fReplAll">Erstat alle</button>
+    </div>
+  </div>
+
+  <div id="updatebar" hidden>
+    <i data-i="update"></i>
+    <span id="updText"></span>
+    <button class="fb t" id="updShow">Vis</button>
+    <button class="fb t" id="updSkip">Spring denne version over</button>
+    <button class="fb x" id="updClose" title="Senere">✕</button>
+  </div>
+
+  <div id="doctabs"></div>
+
+  <!-- Arbejdsområde -->
+  <main id="main">
+    <aside id="nav" hidden><div class="navh">Disposition</div><div id="navList"></div></aside>
+    <div id="workspace" class="mode-split">
+      <div id="editorWrap">
+        <pre id="hl" aria-hidden="true"></pre>
+        <textarea id="ed" spellcheck="false" lang="da" autofocus wrap="soft" aria-label="HTML-editor"></textarea>
+      </div>
+      <div id="previewWrap">
+        <div id="pvbar">
+          <span id="pvInfo" class="muted"></span>
+          <span class="spacer"></span>
+          <span id="pvNote" class="pv-note" hidden></span>
+          <button class="pvb" id="pvReload" title="Indlæs visningen igen">↻</button>
+        </div>
+        <div id="pvscroll">
+          <div id="stage"><div id="stageInner"><iframe id="pv" title="Visning" sandbox="allow-same-origin"></iframe></div></div>
+          <div id="selbox" hidden><span id="selTag"></span></div>
+        </div>
+        <div id="crumbs"></div>
+      </div>
+    </div>
+    <aside id="insp" hidden></aside>
+  </main>
+
+  <!-- Statuslinje -->
+  <footer id="status">
+    <span id="stPos">Ln 1, Kol 1</span>
+    <span id="stWords">0 ord</span>
+    <span id="stChars">0 tegn</span>
+    <span id="stPath"></span>
+    <span class="spacer"></span>
+    <button class="sb" id="stJs" data-tip="JavaScript i visningen|Klik for at skifte: slukket, kendte, tændt">JS: Slukket</button>
+    <button class="sb mode" data-mode="raw" data-tip="Kode">Kode</button>
+    <button class="sb mode" data-mode="split" data-tip="Kode og visning">Split</button>
+    <button class="sb mode" data-mode="read" data-tip="Visning">Visning</button>
+    <select id="langSel" class="sb-sel" title="Sprog"></select>
+    <input type="range" id="zoom2" min="60" max="200" step="10" value="100" title="Zoom">
+    <span id="zoomVal2">100 %</span>
+  </footer>
+</div>
+
+<div id="tip" hidden></div>
+<div id="modalRoot"></div>
+<div id="toast" hidden></div>
+
+<script src="vendor/turndown.js"></script>
+<script src="vendor/turndown-gfm.js"></script>
+<script src="vendor/beautify-css.js"></script>
+<script src="vendor/beautify-js.js"></script>
+<script src="vendor/beautify-html.js"></script>
+<script src="strings.base.js"></script>
+<script src="strings.tn.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="core.js"></script>
+<script src="preview.js"></script>
+<script src="htmltools.js"></script>
+<script src="frameworks.js"></script>
+<script src="inspector.js"></script>
+<script src="effects.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

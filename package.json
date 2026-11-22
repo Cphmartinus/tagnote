@@ -1,0 +1,79 @@
+{
+  "name": "tagnote",
+  "version": "0.1.0",
+  "description": "HTML-editor og -viser i Word-stil",
+  "main": "main.js",
+  "scripts": {
+    "vendor": "node vendor.js",
+    "postinstall": "node vendor.js",
+    "start": "electron .",
+    "catalogs": "node tools/build-catalogs.js",
+    "dist": "node vendor.js && electron-builder --win portable --x64",
+    "dist:installer": "node vendor.js && electron-builder --win nsis --x64"
+  },
+  "keywords": [
+    "html",
+    "editor",
+    "css",
+    "viewer"
+  ],
+  "author": "TagNote contributors",
+  "license": "MIT",
+  "private": true,
+  "productName": "TagNote",
+  "dependencies": {
+    "js-beautify": "^1.15.4",
+    "turndown": "^7.2.5",
+    "turndown-plugin-gfm": "^1.0.2"
+  },
+  "devDependencies": {
+    "@picocss/pico": "^2.1.1",
+    "bootstrap": "^5.3.9",
+    "bulma": "^1.0.4",
+    "electron": "^45.4.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "dk.tagnote.app",
+    "productName": "TagNote",
+    "copyright": "TagNote",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**",
+      "build/icon.png",
+      "package.json",
+      "node_modules/**/*",
+      "!node_modules/.bin",
+      "!node_modules/electron/**",
+      "!node_modules/electron-builder/**",
+      "!node_modules/bootstrap/**",
+      "!node_modules/bulma/**",
+      "!node_modules/@picocss/**",
+      "!**/*.map",
+      "!**/*.md"
+    ],
+    "asar": true,
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "fileAssociations": [
+      {
+        "ext": [
+          "html",
+          "htm"
+        ],
+        "name": "HTML",
+        "role": "Editor"
+      }
+    ]
+  }
+}
