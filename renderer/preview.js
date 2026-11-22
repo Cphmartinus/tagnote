@@ -7,7 +7,7 @@
   const token = Math.random().toString(36).slice(2, 10);
   let A = $('#pv');
   const B = A.cloneNode(false); B.id = 'pv2'; inner.append(B);
-  let cur = A, other = B, seq = 0, busy = false, pending = false, scale = 1, commitT = 0, suppress = false, renderT = 0;
+  let cur = A, other = B, seq = 0, busy = false, pending = false, scale = 1, commitT = 0, suppress = false, renderT = 0, dirtyVisual = false, renderDue = false;
   B.style.visibility = 'hidden';
 
   const offMode = () => state.js === 'off';
@@ -35,6 +35,9 @@
   }
 
   async function renderOnce() {
+    renderDue = false; clearTimeout(renderT);
+    /* Ugemte rettelser fra visningen skrives til koden først, så de ikke går tabt */
+    if (dirtyVisual) commit();
     const html = ed.value, js = state.js;
     let send = html, csp = js === 'off' ? "script-src 'none'; object-src 'none'" : '';
     if (js === 'known') {
@@ -48,6 +51,8 @@
     const w0 = activeWin(); if (w0) { try { y = w0.scrollY; } catch (_) {} } else y = lastY;
     other.setAttribute('sandbox', sandboxFor(js));
     await load(other, url + '?v=' + (++seq));
+    /* Har man skrevet i visningen, mens den nye side blev indlæst, beholdes den gamle, og der tegnes igen */
+    if (dirtyVisual) { pending = true; return; }
     if (offMode()) {
       try { other.contentWindow.scrollTo(0, y); } catch (_) {}
     } else if (js === 'on') { try { other.contentWindow.postMessage({ tn: 'scroll', y }, '*'); } catch (_) {} }
@@ -68,6 +73,7 @@
   function schedule(delay) {
     if (suppress) return;
     clearTimeout(renderT);
+    renderDue = true;
     renderT = setTimeout(() => render(), delay != null ? delay : offMode() ? 220 : 700);
   }
 
@@ -78,12 +84,16 @@
     if (state.edit) {
       try { doc.designMode = 'on'; doc.execCommand('styleWithCSS', false, false); doc.execCommand('defaultParagraphSeparator', false, 'p'); } catch (_) {}
     }
-    doc.addEventListener('input', () => scheduleCommit());
+    doc.addEventListener('input', () => { dirtyVisual = true; scheduleCommit(); });
     doc.addEventListener('selectionchange', () => { if (state.edit) selectionChanged(); });
     doc.addEventListener('click', onClick, true);
     doc.addEventListener('keydown', (e) => { if (TN.onKey && TN.onKey(e, 'preview')) return; });
     doc.addEventListener('contextmenu', onContext);
-    doc.addEventListener('mousedown', () => { TN.focusPane = 'preview'; });
+    doc.addEventListener('mousedown', (e) => {
+      TN.focusPane = 'preview';
+      /* Koden er ændret, men visningen er ikke tegnet igen endnu: tegn den nu, så man ikke retter i en gammel udgave */
+      if (renderDue && !dirtyVisual) { e.preventDefault(); render(); }
+    });
     win.addEventListener('scroll', positionSelBox);
     win.addEventListener('resize', positionSelBox);
     // Genfind markeringen i det nye dokument ud fra kodens markør
@@ -107,10 +117,8 @@
       if (/\.(html?|xhtml)$/i.test(rel)) { const sep = state.path.includes('\\') ? '\\' : '/'; TN.openPath && TN.openPath(base + sep + rel.replace(/\//g, sep)); }
     }
   }
-  if (api.onPreviewNavigate) api.onPreviewNavigate((u) => {
-    const m = /\/__preview\/[a-z0-9]+\/(.*)$/i.exec(u);
-    if (m && /\.(html?|xhtml)(\?|#|$)/i.test(m[1]) && TN.openPath) { try { TN.openPath(decodeURIComponent(m[1].split(/[?#]/)[0]).replace(/^([A-Za-z]:)/, '$1')); } catch (_) {} }
-  });
+  if (api.onPreviewNavigate) api.onPreviewNavigate((file) => { if (TN.openPath) TN.openPath(file); });
+
 
   /* ---------- tilbage til kildekoden ---------- */
   function serialize(doc, original) {
@@ -131,9 +139,13 @@
     if (/\n$/.test(original) && !/\n$/.test(out)) out += '\n';
     return out;
   }
-  function scheduleCommit() { clearTimeout(commitT); commitT = setTimeout(commit, 350); }
-  function commit() {
+  function scheduleCommit() { dirtyVisual = true; clearTimeout(commitT); commitT = setTimeout(commit, 350); }
+  /* Skriver visningens indhold tilbage til koden, men kun hvis der er rettet i visningen.
+     Ellers kunne en visning, der endnu ikke er tegnet igen, overskrive nye ændringer i koden. */
+  function commit(force) {
     clearTimeout(commitT);
+    if (!dirtyVisual && !force) return false;
+    dirtyVisual = false;
     const doc = activeDoc(); if (!doc) return false;
     const text = serialize(doc, ed.value);
     if (text === ed.value) return false;
@@ -231,11 +243,11 @@
 
   /* ---------- operationer på elementer ---------- */
   TN.elOps = {
-    duplicate() { const el = sel.el; if (!el || /^(HTML|BODY|HEAD)$/.test(el.tagName)) return; const c = el.cloneNode(true); el.after(c); sel.set(c); commit(); },
-    move(d) { const el = sel.el; if (!el) return; const sib = d < 0 ? el.previousElementSibling : el.nextElementSibling; if (!sib) return; if (d < 0) sib.before(el); else sib.after(el); positionSelBox(); commit(); },
-    remove() { const el = sel.el; if (!el || /^(HTML|BODY|HEAD)$/.test(el.tagName)) return; const p = el.parentElement; el.remove(); sel.set(p); commit(); },
-    setClass(cls) { const el = sel.el; if (!el) return; if (cls) el.setAttribute('class', cls); else el.removeAttribute('class'); commit(); positionSelBox(); renderCrumbs(); fire(); },
-    setAttr(name, val) { const el = sel.el; if (!el) return; if (val == null || val === '') el.removeAttribute(name); else el.setAttribute(name, val); commit(); positionSelBox(); renderCrumbs(); fire(); },
+    duplicate() { const el = sel.el; if (!el || /^(HTML|BODY|HEAD)$/.test(el.tagName)) return; const c = el.cloneNode(true); el.after(c); sel.set(c); commit(true); },
+    move(d) { const el = sel.el; if (!el) return; const sib = d < 0 ? el.previousElementSibling : el.nextElementSibling; if (!sib) return; if (d < 0) sib.before(el); else sib.after(el); positionSelBox(); commit(true); },
+    remove() { const el = sel.el; if (!el || /^(HTML|BODY|HEAD)$/.test(el.tagName)) return; const p = el.parentElement; el.remove(); sel.set(p); commit(true); },
+    setClass(cls) { const el = sel.el; if (!el) return; if (cls) el.setAttribute('class', cls); else el.removeAttribute('class'); commit(true); positionSelBox(); renderCrumbs(); fire(); },
+    setAttr(name, val) { const el = sel.el; if (!el) return; if (val == null || val === '') el.removeAttribute(name); else el.setAttribute(name, val); commit(true); positionSelBox(); renderCrumbs(); fire(); },
   };
 
   /* ---------- formatering i visningen ---------- */
@@ -243,7 +255,7 @@
     const doc = activeDoc(); if (!doc || !state.edit) return false;
     cur.contentWindow.focus();
     const ok = doc.execCommand(cmd, false, val);
-    scheduleCommit();
+    dirtyVisual = true; scheduleCommit();
     return ok;
   }
   const insertHtml = (html) => exec('insertHTML', html);

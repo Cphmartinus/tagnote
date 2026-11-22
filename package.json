@@ -1,15 +1,15 @@
 {
   "name": "tagnote",
   "version": "0.1.0",
-  "description": "HTML-editor og -viser i Word-stil",
+  "description": "HTML-editor og -viser i Microsoft Word-stil",
   "main": "main.js",
   "scripts": {
     "vendor": "node vendor.js",
     "postinstall": "node vendor.js",
     "start": "electron .",
     "catalogs": "node tools/build-catalogs.js",
-    "dist": "node vendor.js && electron-builder --win portable --x64",
-    "dist:installer": "node vendor.js && electron-builder --win nsis --x64"
+    "dist": "node vendor.js && electron-builder --win portable nsis --x64 --publish never",
+    "check": "node tools/check.js"
   },
   "keywords": [
     "html",
@@ -21,22 +21,21 @@
   "license": "MIT",
   "private": true,
   "productName": "TagNote",
-  "dependencies": {
-    "js-beautify": "^1.15.4",
-    "turndown": "^7.2.5",
-    "turndown-plugin-gfm": "^1.0.2"
-  },
   "devDependencies": {
     "@picocss/pico": "^2.1.1",
     "bootstrap": "^5.3.9",
     "bulma": "^1.0.4",
     "electron": "^45.4.1",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "js-beautify": "^1.15.4",
+    "resedit": "^2.0.3",
+    "turndown": "^7.2.5",
+    "turndown-plugin-gfm": "^1.0.2"
   },
   "build": {
     "appId": "dk.tagnote.app",
     "productName": "TagNote",
-    "copyright": "TagNote",
+    "copyright": "TagNote contributors",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -47,33 +46,41 @@
       "renderer/**",
       "build/icon.png",
       "package.json",
-      "node_modules/**/*",
-      "!node_modules/.bin",
-      "!node_modules/electron/**",
-      "!node_modules/electron-builder/**",
-      "!node_modules/bootstrap/**",
-      "!node_modules/bulma/**",
-      "!node_modules/@picocss/**",
       "!**/*.map",
       "!**/*.md"
     ],
     "asar": true,
+    "compression": "normal",
     "win": {
-      "icon": "build/icon.png",
       "target": [
         "nsis",
         "portable"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "fileAssociations": [
+        {
+          "ext": [
+            "html",
+            "htm"
+          ],
+          "name": "HTML-dokument",
+          "description": "HTML-dokument",
+          "role": "Editor"
+        }
       ]
     },
-    "fileAssociations": [
-      {
-        "ext": [
-          "html",
-          "htm"
-        ],
-        "name": "HTML",
-        "role": "Editor"
-      }
-    ]
+    "portable": {
+      "artifactName": "TagNote-${version}-portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "TagNote-Setup-${version}.exe",
+      "perMachine": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "afterPack": "./afterPack.js"
   }
 }

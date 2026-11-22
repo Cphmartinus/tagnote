@@ -48,9 +48,16 @@ const previews = new Map(); // token -> { rest, html, csp }
 const allowedNav = new Set();
 const extOf = (p) => path.extname(p).slice(1).toLowerCase();
 
+/* Dokumentets sti skrives ind i adressen, så relative stier virker. Netværksstier (\\server\share)
+   får præfikset __unc__/server, så servernavnet ikke går tabt. */
 function restFor(docPath) {
-  if (docPath) return pathToFileURL(docPath).pathname.replace(/^\//, '');
-  return '__untitled__/index.html';
+  if (!docPath) return '__untitled__/index.html';
+  const u = pathToFileURL(docPath);
+  return u.host ? '__unc__/' + u.host + u.pathname : u.pathname.replace(/^\//, '');
+}
+function restToFile(rest) {
+  if (rest.startsWith('__untitled__/')) return null;
+  return rest.startsWith('__unc__/') ? fileURLToPath('file://' + rest.slice(8)) : fileURLToPath('file:///' + rest);
 }
 function insideDir(root, p) {
   const rel = path.relative(root, p);
@@ -78,7 +85,8 @@ async function handleProtocol(req) {
       return respond(entry.html, 'text/html; charset=utf-8', h);
     }
     let file;
-    try { file = fileURLToPath('file:///' + rest); } catch (_) { return notFound(); }
+    try { file = restToFile(rest); } catch (_) { return notFound(); }
+    if (!file) return notFound();
     const ext = extOf(file);
     if (!PREVIEW_EXT.has(ext)) return notFound();
     if (LOCAL_ONLY_EXT.has(ext) && !(entry.dir && (path.resolve(file) === path.resolve(entry.dir) || insideDir(entry.dir, path.resolve(file))))) return notFound();
@@ -96,8 +104,9 @@ async function handleProtocol(req) {
   let rel;
   try { rel = decodeURIComponent(pathname); } catch (_) { return notFound(); }
   if (rel === '/' || rel === '') rel = '/index.html';
-  const root = rel.startsWith('/build/') ? __dirname : path.join(__dirname, 'renderer');
-  const file = path.resolve(root, '.' + rel);
+  const isBuild = rel.startsWith('/build/');
+  const root = path.join(__dirname, isBuild ? 'build' : 'renderer');
+  const file = path.resolve(root, '.' + (isBuild ? rel.slice(6) : rel));
   if (!insideDir(root, file)) return notFound();
   try {
     const buf = fs.readFileSync(file);
@@ -264,7 +273,14 @@ function createWindow() {
     if (allowedNav.has(url) || allowedNav.has(url.split('?')[0])) return;
     e.preventDefault();
     if (/^(https?:|mailto:)/i.test(url)) openExternal(url);
-    else if (e.isMainFrame === false && url.startsWith('tagnote://app/__preview/')) win.webContents.send('preview:navigate', url);
+    else if (e.isMainFrame === false && url.startsWith('tagnote://app/__preview/')) {
+      /* et link til en anden lokal HTML-fil åbnes i en ny fane */
+      try {
+        const m = /^\/__preview\/[a-z0-9]+\/(.*)$/i.exec(new URL(url).pathname);
+        const file = m && restToFile(m[1]);
+        if (file && /\.(html?|xhtml)$/i.test(file) && fs.existsSync(file)) win.webContents.send('preview:navigate', file);
+      } catch (_) {}
+    }
   });
   win.on('close', (e) => {
     if (!forceClose && rendererReady && !win.webContents.isCrashed()) { e.preventDefault(); win.webContents.send('app:request-close'); }

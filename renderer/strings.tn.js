@@ -430,6 +430,8 @@ window.WD_STRINGS.push(
 ["Mellem (md)", "Medium (md)"],
 ["Tegnsæt UTF-8", "UTF-8 character set"],
 ["Indlejret", "Embedded"],
+["Afsnit, overskrifter og boks", "Paragraph, headings and box"],
+["Indsætter en kommentar, der ikke vises på siden", "Inserts a comment that is not shown on the page"],
 ["Mangler <!DOCTYPE html>. Browseren går i quirks-tilstand, og layoutet kan opføre sig anderledes.", "Missing <!DOCTYPE html>. The browser enters quirks mode, and the layout may behave differently."],
 ["Mangler lang på <html>. Skærmlæsere og oversættelse har brug for sproget.", "Missing lang on <html>. Screen readers and translation need the language."],
 ["Mangler <meta charset=\"utf-8\">. Specialtegn kan blive vist forkert.", "Missing <meta charset=\"utf-8\">. Special characters may display incorrectly."],

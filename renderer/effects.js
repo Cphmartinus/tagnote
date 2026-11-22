@@ -75,7 +75,7 @@
     const name = 'tn-scroll-' + v.fx;
     const range = v.fx === 'parallax' ? 'cover 0% cover 100%' : v.fx === 'focus' ? 'cover 0% cover 100%' : 'entry ' + v.from + '% entry ' + v.to + '%';
     const frames = v.fx === 'focus' ? '  0% { ' + fx[1] + ' }\n  50% { ' + fx[2] + ' }\n  100% { ' + fx[1] + ' }' : '  from { ' + fx[1] + ' }\n  to { ' + fx[2] + ' }';
-    return '/* Scroll-animation: ' + t(fx[0]) + ' (ren CSS) */\n@supports (animation-timeline: view()) {\n  @keyframes ' + name + ' {\n' + frames.replace(/^/gm, '  ') + '\n  }\n  @media (prefers-reduced-motion: no-preference) {\n    ' + sel + ' {\n      --d: ' + v.dist + 'px;\n      animation: ' + name + ' ' + (v.ease === 'linear' ? 'linear' : v.ease) + ' both;\n      animation-timeline: view();\n      animation-range: ' + range + ';\n    }\n  }\n}';
+    return '/* Scroll-animation: ' + t(fx[0]) + ' */\n@supports (animation-timeline: view()) {\n  @keyframes ' + name + ' {\n' + frames.replace(/^/gm, '  ') + '\n  }\n  @media (prefers-reduced-motion: no-preference) {\n    ' + sel + ' {\n      --d: ' + v.dist + 'px;\n      animation: ' + name + ' ' + (v.ease === 'linear' ? 'linear' : v.ease) + ' both;\n      animation-timeline: view();\n      animation-range: ' + range + ';\n    }\n  }\n}';
   }
   function scrollDemo() { return '<div class="fxscroll"><p class="muted small">' + esc(t('Rul i boksen for at se effekten')) + '</p>' + items(6) + '<p class="muted small">' + esc(t('Slut')) + '</p></div>'; }
   TN.cmds.fxScroll = () => fxDialog({

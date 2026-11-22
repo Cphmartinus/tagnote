@@ -489,7 +489,7 @@
     '<h4>' + t('Design og Effekter') + '</h4><ul>' + li('Stilpanelet retter farver, tekst, afstande, kanter og layout for det markerede element.') + li('Effekter laver scroll-animationer, gradienter, skygger, glas og flydende størrelser som almindelig CSS.') + li('Når TagNote finder Bootstrap, Tailwind, Bulma eller Pico i siden, dukker ekstra faner op med komponenter og klasser.') + '</ul>' +
     '<h4>' + t('Gemmer') + '</h4><p>' + t('Dokumenter gemmes som helt almindelige .html-filer. Visuel redigering omskriver koden i standardformat for de dele, du retter.') + '</p><p>' + supportHtml() + '</p>';
   const shortcutsHtml = () => '<table><tr><th>' + t('Genvej') + '</th><th>' + t('Funktion') + '</th></tr>' +
-    [['Ctrl+N / O / S', 'Ny, åbn, gem'], ['Ctrl+Shift+S', 'Gem som'], ['Ctrl+W', 'Luk fane'], ['Ctrl+B / I / U', 'Fed, kursiv, understreget'], ['Ctrl+K', 'Link'], ['Ctrl+E', 'Indlejret kode'], ['Ctrl+/', 'Kommentér ind/ud'], ['Ctrl+Shift+F', 'Formatér kode'], ['Alt+T', 'Omslut med tag'], ['Alt+↑', 'Vælg overordnet element'], ['Ctrl+F / Ctrl+H', 'Find, erstat'], ['F3 / Shift+F3', 'Find næste, forrige'], ['Ctrl+Tab', 'Næste fane'], ['Ctrl+ + / - / 0', 'Zoom'], ['Ctrl+F1', 'Skjul båndet'], ['Ctrl+P', 'Eksportér til PDF'], ['Tab / Shift+Tab', 'Indryk, fjern indrykning']].map(([k, f]) => '<tr><td><kbd>' + k + '</kbd></td><td>' + t(f) + '</td></tr>').join('') + '</table>';
+    [['Ctrl+N / O / S', 'Ny, åbn, gem'], ['Ctrl+Shift+S', 'Gem som'], ['Ctrl+W', 'Luk fane'], ['Ctrl+B / I / U', 'Fed, kursiv, understreget'], ['Ctrl+K', 'Link'], ['Ctrl+E', 'Indlejret kode'], ['Ctrl+/', 'Kommentér ind/ud'], ['Ctrl+Shift+F', 'Formatér kode'], ['Ctrl+Shift+T', 'Omslut med tag'], ['Alt+↑', 'Vælg overordnet element'], ['Ctrl+F / Ctrl+H', 'Find, erstat'], ['F3 / Shift+F3', 'Find næste, forrige'], ['Ctrl+Tab', 'Næste fane'], ['Ctrl+ + / - / 0', 'Zoom'], ['Ctrl+F1', 'Skjul båndet'], ['Ctrl+P', 'Eksportér til PDF'], ['Tab / Shift+Tab', 'Indryk, fjern indrykning']].map(([k, f]) => '<tr><td><kbd>' + k + '</kbd></td><td>' + t(f) + '</td></tr>').join('') + '</table>';
   async function cmdAbout() {
     const b = el('div');
     b.innerHTML = '<p><b>TagNote</b> – ' + t('HTML-editor og -viser i Microsoft Word-stil.') + '</p><p>' + t('Dokumenter gemmes som helt almindelige .html-filer. Hold musen over en knap for at se genvej og HTML-kode.') + '</p><p>' + supportHtml() + '</p>';
@@ -605,14 +605,14 @@
     if (key === 'f3') return go(() => findNext(e.shiftKey ? -1 : 1));
     if (key === 'escape' && !$('#findbar').hidden) return go(closeFind);
     if (e.altKey && !ctrl && key === 'arrowup' && TN.sel.el) return go(() => TN.sel.parent());
-    if (!ctrl) {
-      if (e.altKey && /^Digit[0-6]$/.test(code) && false) return false;
-      return false;
-    }
+    if (!ctrl) return false;
+    /* Ctrl+Alt er AltGr på mange tastaturer ({ [ ] } @ m.fl.), så den kombination bruges aldrig til genveje */
+    if (e.altKey || (e.getModifierState && e.getModifierState('AltGraph'))) return false;
     if (from === 'preview' && ['b', 'i', 'u', 'z', 'y', 'a', 'c', 'x', 'v'].includes(key) && !e.shiftKey) return false;
     if (key === 'tab' || code === 'PageDown' || code === 'PageUp') return go(() => switchBy(key === 'tab' ? (e.shiftKey ? -1 : 1) : code === 'PageUp' ? -1 : 1));
-    if (e.altKey && key === 't') return go(() => run('wrapTag'));
     if (e.shiftKey) {
+      if (key === '/') return go(() => run('toggleComment')); // Ctrl+/ på danske og nordiske tastaturer
+      if (key === 't') return go(() => run('wrapTag'));
       if (code === 'Digit7') return go(() => run('ol')); if (code === 'Digit8') return go(() => run('ul'));
       if (key === 's') return go(() => run('saveAs')); if (key === 'x') return go(() => run('strike')); if (key === 'q') return go(() => run('quote'));
       if (key === 'e') return go(() => run('codeblock')); if (key === 'f') return go(() => run('beautify'));
@@ -648,6 +648,8 @@
     const pos = ed.selectionStart; const before = ed.value.slice(Math.max(0, pos - 300), pos);
     const m = /<([a-zA-Z][\w:-]*)(?:\s(?:[^<>"']|"[^"]*"|'[^']*')*)?$/.exec(before);
     if (!m || VOID.has(m[1].toLowerCase()) || /\/$/.test(before)) return;
+    const st = TN.map.stackAt(ed.value, pos); const top = st[st.length - 1];
+    if (top && /^(script|style)$/.test(top.name) && pos >= top.end) return; // ikke i JavaScript eller CSS
     e.preventDefault(); const close = '</' + m[1] + '>'; TN.src.replace(pos, pos, '>' + close, pos + 1);
   });
   ed.addEventListener('contextmenu', (e) => {
@@ -656,7 +658,7 @@
     TN.popMenu(a, [
       { label: 'Klip', icon: 'cut', hint: 'Ctrl+X', disabled: !has, onClick: () => api.editAction('cut') }, { label: 'Kopiér', icon: 'copy', hint: 'Ctrl+C', disabled: !has, onClick: () => api.editAction('copy') },
       { label: 'Indsæt', icon: 'paste', hint: 'Ctrl+V', onClick: () => api.editAction('paste') }, { label: 'Markér alt', icon: 'selectall', hint: 'Ctrl+A', onClick: () => api.editAction('selectAll') }, '-',
-      { label: 'Kommentér ind/ud', icon: 'comment', hint: 'Ctrl+/', onClick: () => run('toggleComment') }, { label: 'Omslut med tag…', icon: 'tag', hint: 'Alt+T', onClick: () => run('wrapTag') }, { label: 'Formatér kode', icon: 'wand', hint: 'Ctrl+Shift+F', onClick: () => run('beautify') },
+      { label: 'Kommentér ind/ud', icon: 'comment', hint: 'Ctrl+/', onClick: () => run('toggleComment') }, { label: 'Omslut med tag…', icon: 'tag', hint: 'Ctrl+Shift+T', onClick: () => run('wrapTag') }, { label: 'Formatér kode', icon: 'wand', hint: 'Ctrl+Shift+F', onClick: () => run('beautify') },
     ]);
   });
 

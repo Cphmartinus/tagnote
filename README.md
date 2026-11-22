@@ -28,6 +28,15 @@ TagNote gives you the familiar ribbon, title bar, tabs and status bar of a word 
 
 Built on Electron 45 (Chromium 156), so modern CSS works in the preview.
 
+## Download
+
+Get the latest Windows build from the [Releases page](https://github.com/Cphmartinus/tagnote/releases/latest):
+
+- `TagNote-Setup-<version>.exe` (**recommended**): installs TagNote, opens `.html` files with a double-click, and can install later updates from *Help → Search for updates*.
+- `TagNote-<version>-portable.exe`: runs without installation. It unpacks itself on every start, so it starts more slowly.
+
+The executables are not code-signed, so Windows SmartScreen may show a warning the first time. Choose **More info → Run anyway**. Releases are built from this repository by GitHub Actions, see [`.github/workflows/build.yml`](.github/workflows/build.yml).
+
 ## How the preview works
 
 The program and the preview are served from one custom scheme (`tagnote://app/`). The page is shown in an `iframe`:
@@ -49,7 +58,7 @@ npm install
 npm start
 ```
 
-`npm install` copies the browser libraries to `renderer/vendor`. `npm run catalogs` regenerates the class lists in `renderer/catalog` from the installed Bootstrap, Bulma and Pico packages. `npm run dist` builds a Windows portable executable.
+`npm install` copies the browser libraries to `renderer/vendor`. `npm run catalogs` regenerates the class lists in `renderer/catalog` from the installed Bootstrap, Bulma and Pico packages. `npm run check` checks the scripts and translation files. `npm run dist` builds the Windows installer and portable executable (the installer needs Windows, or Wine on Linux).
 
 ## Languages
 

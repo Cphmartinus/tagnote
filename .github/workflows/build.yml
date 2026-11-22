@@ -1,0 +1,42 @@
+name: TagNote (Windows build)
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag to create, e.g. v0.1.0 (leave empty to only build)'
+        required: false
+        default: ''
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - run: npm run check
+      - name: Check that the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          V=$(node -p "require('./package.json').version")
+          [ "v$V" = "${{ github.ref_name }}" ] || { echo "Tag ${{ github.ref_name }} does not match package.json version $V"; exit 1; }
+      - run: npx electron-builder --win portable nsis --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TagNote-windows
+          path: dist/*.exe
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/') || inputs.version != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.version != '' && inputs.version || github.ref_name }}
+        run: |
+          TAG="v${TAG#v}"
+          if [ -f "release-notes/$TAG.md" ]; then NOTES=(--notes-file "release-notes/$TAG.md"); else NOTES=(--generate-notes); fi
+          gh release create "$TAG" dist/*.exe --target "${{ github.sha }}" --title "TagNote $TAG" "${NOTES[@]}"

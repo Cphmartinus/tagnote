@@ -12,4 +12,4 @@ First version.
 - Effects: scroll animations, hover transitions, keyframe animations, gradients, shadows, glass, scroll snap, sticky, reading progress.
 - Design tools: colour palette (OKLCH), fluid sizes with clamp(), CSS variables, font pairs, page check.
 - Export to PDF, clean HTML, Markdown and plain text.
-- Electron 45.
+- Electron 45. Windows installer and portable build from GitHub Actions.

@@ -203,3 +203,7 @@
 #status > * { white-space: nowrap; flex: none; }
 #status .spacer { flex: 0 0 0; }
 #stPath { flex: 1 1 auto !important; min-width: 0; max-width: none; }
+
+/* Zoom gælder koden. Visningen har sin egen bredde, og zoom ville flytte markeringsrammen. */
+#workspace { zoom: 1; }
+#editorWrap { zoom: var(--zoom, 1); }
