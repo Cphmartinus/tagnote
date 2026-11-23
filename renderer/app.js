@@ -64,6 +64,7 @@
 
   /* ======================= filer ======================= */
   function loadDoc(content, path) {
+    if (TN.sel && TN.sel.forget) TN.sel.forget();
     ed.value = content; state.path = path || null; state.saved = content; state.lastSnap = content;
     ed.scrollTop = 0; ed.setSelectionRange(0, 0);
     state.js = path ? store.get('js:' + path, 'off') : 'off';
@@ -80,7 +81,15 @@
   }
   async function save(as) {
     TN.preview.commit();
+    if ((!state.path || as) && TN.level && TN.level() === 'simple' && TN.site) {
+      const p = await TN.site.saveNew(ed.value, state.untitled);
+      if (!p) return false;
+      return afterSave({ path: p });
+    }
     const r = await api.saveFile({ path: state.path, content: ed.value, saveAs: !!as, suggested: state.untitled });
+    return afterSave(r);
+  }
+  function afterSave(r) {
     if (!r) return false;
     if (r.error) { TN.toast(t('Kunne ikke gemme: {0}', r.error), 5000); return false; }
     const was = state.path; state.path = r.path; state.saved = ed.value;
@@ -100,6 +109,7 @@
   const current = () => docs.find((d) => d.id === curId);
   function stash() { const d = current(); if (!d) return; Object.assign(d, { path: state.path, untitled: state.untitled, untitledNo: state.untitledNo, saved: state.saved, lastSnap: state.lastSnap, text: ed.value, sel: [ed.selectionStart, ed.selectionEnd], scroll: ed.scrollTop, js: state.js }); }
   function restore(d) {
+    if (TN.sel && TN.sel.forget) TN.sel.forget();
     curId = d.id; Object.assign(state, { path: d.path, untitled: d.untitled, untitledNo: d.untitledNo, saved: d.saved, lastSnap: d.lastSnap, js: d.js || 'off' });
     ed.value = d.text; applyJs(state.js, true); onChange(); buildNav(); ed.scrollTop = d.scroll;
     try { ed.setSelectionRange(d.sel[0], d.sel[1]); } catch (_) {}
@@ -178,12 +188,17 @@
     TN.preview.updateNote();
     if (TN.inspector) TN.inspector.refresh();
     if (TN.sel && mode !== 'off') TN.sel.clear();
+    if (TN.updateBanner) TN.updateBanner();
   }
   async function setJs(mode) {
     if (mode === state.js) return;
     if (mode === 'on' && !store.get('jsWarned', false)) {
-      const body = el('div'); body.innerHTML = '<p>' + esc(t('Med JavaScript til kører alle scripts i siden. En side fra en andens hånd kan indeholde kode, der gør noget, du ikke forventer, fx at hente indhold fra internettet.')) + '</p><p>' + esc(t('Siden kører stadig i en isoleret ramme uden adgang til dine filer eller til programmet. Visuel redigering og stilpanelet er slået fra, mens JavaScript er til.')) + '</p>';
-      const ok = await TN.modal({ title: t('Slå JavaScript til i visningen?'), body, buttons: [{ text: t('Annuller') }, { text: t('Slå til'), primary: true, value: () => true }] });
+      const simple = TN.level && TN.level() === 'simple';
+      const body = el('div');
+      body.innerHTML = simple
+        ? '<p>' + esc(t('Når siden køres, virker menuer, knapper og andre funktioner. Men koden i siden kan også gøre ting, du ikke forventer, fx hente indhold fra internettet.')) + '</p><p>' + esc(t('Gør det kun med sider, du selv har lavet eller stoler på. Siden kan ikke nå dine filer, og du kan ikke rette i den, mens den kører.')) + '</p>'
+        : '<p>' + esc(t('Med JavaScript til kører alle scripts i siden. En side fra en andens hånd kan indeholde kode, der gør noget, du ikke forventer, fx at hente indhold fra internettet.')) + '</p><p>' + esc(t('Siden kører stadig i en isoleret ramme uden adgang til dine filer eller til programmet. Visuel redigering og stilpanelet er slået fra, mens JavaScript er til.')) + '</p>';
+      const ok = await TN.modal({ title: simple ? t('Køre siden?') : t('Slå JavaScript til i visningen?'), body, buttons: [{ text: t('Annuller') }, { text: simple ? t('Kør siden') : t('Slå til'), primary: true, value: () => true }] });
       if (!ok) return;
       store.set('jsWarned', true);
     }
@@ -198,11 +213,15 @@
   /* ======================= tilstande, bredde, temaer, zoom ======================= */
   function setMode(m) {
     state.mode = m; store.set('mode', m);
+    const lv = document.body.dataset.level; // sættes først, når niveauet er indlæst
+    if (lv === 'simple') store.set('simpleCode', m !== 'read'); else if (lv === 'advanced') store.set('advMode', m);
     workspace.className = 'mode-' + m;
     $$('[data-mode]').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
     if (m !== 'raw') { TN.focusPane = m === 'read' ? 'preview' : TN.focusPane; TN.preview.render(true); TN.preview.layout(); }
     if (m === 'read') { TN.preview.focusPane(); TN.focusPane = 'preview'; } else ed.focus();
     if (TN.inspector) TN.inspector.refresh();
+    if (TN.updateCodeBtn) TN.updateCodeBtn();
+    if (TN.updateBanner) TN.updateBanner();
   }
   TN.setMode = setMode;
   function setWidth(w) {
@@ -488,7 +507,11 @@
     await TN.modal({ title, body: b, wide: true, buttons: [{ text: t('Luk'), primary: true }] });
   }
   const li = (k) => '<li>' + t(k) + '</li>';
-  const helpHtml = () => '<h4>' + t('Kom i gang') + '</h4><ul>' + li('Åbn en .html-fil, eller skriv direkte i koden til venstre. Siden vises til højre og opdateres, mens du skriver.') + li('Under Visning vælger du Kode, Kode + visning eller Visning, og hvor bred siden skal vises.') + li('Klik på et element i visningen, og det markeres. Brødkrummerne under visningen viser, hvor du er i siden.') + li('Ret tekst direkte i visningen. Ændringerne skrives tilbage til koden.') + '</ul>' +
+  const simpleHelpHtml = () => '<h4>' + t('Kom i gang') + '</h4><ul>' + li('Klik på Ny under Filer, og vælg en færdig side at starte fra.') + li('Klik i en tekst i siden, og skriv. Det virker som i Word.') + li('Under Indsæt tilføjer du overskrifter, tekst, billeder, knapper, kolonner og meget mere. Det nye kommer under det, du har klikket på.') + li('Klik på noget i siden for at få en lille værktøjslinje. Her kan du ændre farve og størrelse, flytte det, kopiere det eller slette det.') + '</ul>' +
+    '<h4>' + t('Udseende') + '</h4><ul>' + li('Under Design vælger du farver, skrift og luft til hele siden.') + li('Udseende ændrer kun det, du har markeret.') + li('Under Effekter kan det markerede fx glide ind, når man ruller ned.') + '</ul>' +
+    '<h4>' + t('Gem og del') + '</h4><ul>' + li('Første gang du gemmer, laver TagNote en mappe til hjemmesiden. Siden hedder index.html, og billeder ligger i mappen billeder.') + li('Hele mappen er din hjemmeside. Den kan lægges på et webhotel, fx ved at uploade mappen.') + li('Gem som PDF under Filer laver en kopi, du kan sende eller udskrive.') + '</ul>' +
+    '<h4>' + t('Enkel og Avanceret') + '</h4><p>' + t('TagNote er i Enkel tilstand. Klik på Enkel nederst til højre for at skifte til Avanceret, hvor du kan se koden og bruge alle værktøjerne.') + '</p><p>' + supportHtml() + '</p>';
+  const helpHtml = () => (TN.level && TN.level() === 'simple') ? simpleHelpHtml() : '<h4>' + t('Kom i gang') + '</h4><ul>' + li('Åbn en .html-fil, eller skriv direkte i koden til venstre. Siden vises til højre og opdateres, mens du skriver.') + li('Under Visning vælger du Kode, Kode + visning eller Visning, og hvor bred siden skal vises.') + li('Klik på et element i visningen, og det markeres. Brødkrummerne under visningen viser, hvor du er i siden.') + li('Ret tekst direkte i visningen. Ændringerne skrives tilbage til koden.') + '</ul>' +
     '<h4>' + t('JavaScript i visningen') + '</h4><p>' + t('Som standard kører ingen scripts i visningen. Det er sikkert, når du åbner filer fra andre, og det giver visuel redigering. Kendte slår kun scripts fra kendte biblioteker (Bootstrap, Tailwind m.fl.) til. Til kører alle scripts, men uden visuel redigering.') + '</p>' +
     '<h4>' + t('Design og Effekter') + '</h4><ul>' + li('Stilpanelet retter farver, tekst, afstande, kanter og layout for det markerede element.') + li('Effekter laver scroll-animationer, gradienter, skygger, glas og flydende størrelser som almindelig CSS.') + li('Når TagNote finder Bootstrap, Tailwind, Bulma eller Pico i siden, dukker ekstra faner op med komponenter og klasser.') + '</ul>' +
     '<h4>' + t('Gemmer') + '</h4><p>' + t('Dokumenter gemmes som helt almindelige .html-filer. Visuel redigering omskriver koden i standardformat for de dele, du retter.') + '</p><p>' + supportHtml() + '</p>';
@@ -690,7 +713,7 @@
       const parts = x.dataset.tip.split('|');
       tip.innerHTML = ''; const tt = document.createElement('b'); tt.textContent = t(parts[0]); tip.append(tt);
       if (parts[1]) { const k = document.createElement('div'); k.className = 'k'; k.textContent = t(parts[1]); tip.append(k); }
-      if (parts[2]) { const d = document.createElement('div'); d.append('HTML: '); const c = document.createElement('code'); c.textContent = parts[2]; d.append(c); tip.append(d); }
+      if (parts[2] && !(TN.level && TN.level() === 'simple')) { const d = document.createElement('div'); d.append('HTML: '); const c = document.createElement('code'); c.textContent = parts[2]; d.append(c); tip.append(d); }
       tip.hidden = false; const r = x.getBoundingClientRect(), w = tip.offsetWidth;
       tip.style.left = Math.max(6, Math.min(innerWidth - w - 6, r.left)) + 'px'; tip.style.top = Math.min(innerHeight - tip.offsetHeight - 6, r.bottom + 6) + 'px';
     }, 450);
@@ -725,20 +748,24 @@
 <body>
   <header>
     <h1>${esc(t('Velkommen til TagNote'))}</h1>
-    <p>${esc(t('Skriv HTML til venstre og se siden med det samme til højre. Brug båndet foroven, som du kender det fra Word.'))}</p>
+    <p>${esc(t('Her laver du din egen hjemmeside. Klik i teksten, og skriv, som du gør i Word.'))}</p>
   </header>
   <main>
     <section class="card reveal">
-      <h2>${esc(t('Ret direkte i siden'))}</h2>
-      <p>${esc(t('Klik i en tekst her til højre, og skriv. Ændringen skrives tilbage til koden.'))}</p>
+      <h2>${esc(t('1. Start med en færdig side'))}</h2>
+      <p>${esc(t('Klik på Ny under Filer, og vælg fx en side til en café, en forening eller dig selv.'))}</p>
     </section>
     <section class="card reveal">
-      <h2>${esc(t('Stilpanel og effekter'))}</h2>
-      <p>${esc(t('Markér et element, og ret farver, afstande og kanter under'))} <code>Design</code> ${esc(t('eller lav en scroll-animation under'))} <code>Effekter</code>.</p>
+      <h2>${esc(t('2. Skriv og tilføj'))}</h2>
+      <p>${esc(t('Klik i en tekst, og skriv. Under Indsæt finder du overskrifter, billeder, knapper og kolonner.'))}</p>
     </section>
     <section class="card reveal">
-      <h2>${esc(t('Sikker som standard'))}</h2>
-      <p>${esc(t('Scripts i siden kører ikke, før du selv slår JavaScript til under Visning.'))}</p>
+      <h2>${esc(t('3. Giv siden dit eget udseende'))}</h2>
+      <p>${esc(t('Under Design vælger du farver og skrift til hele siden. Klik på noget i siden for at ændre netop det.'))}</p>
+    </section>
+    <section class="card reveal">
+      <h2>${esc(t('4. Gem din hjemmeside'))}</h2>
+      <p>${esc(t('Første gang du gemmer, laver TagNote en mappe med siden og dens billeder, klar til at lægge på nettet.'))}</p>
     </section>
   </main>
 </body>
@@ -762,5 +789,6 @@
   if (store.get('autoUpdate', true) && Date.now() - store.get('lastUpdateCheck', 0) > 20 * 3600 * 1000) setTimeout(() => checkForUpdates(true), 5000);
   for (const f of TN.ready) try { f(); } catch (_) {}
   if (window.WDi18n) window.WDi18n.apply(document.body);
+  Object.assign(TN, { setJs, setTheme, newTab, openInTab, applyLanguage, setZoom });
   window.__tn = { state, setMode, setWidth, setJs, run, loadDoc, newTab, applyLanguage, showTab, setTheme, openInTab };
 })();

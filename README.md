@@ -2,29 +2,43 @@
 
 A Word-style HTML editor and viewer for Windows 10 and 11. A sister program to [MarkNote](https://github.com/Cphmartinus/marknote).
 
-TagNote gives you the familiar ribbon, title bar, tabs and status bar of a word processor, while your documents stay plain `.html` files. See the page as you write it, edit text directly in the preview, and get help with CSS, frameworks and modern effects. No lock-in, no account, no telemetry.
+TagNote lets anyone make a website, also without knowing HTML, CSS or JavaScript. Start from a ready-made page, type straight into it as in Word, add pictures, buttons and columns, and choose colours and fonts for the whole page. Your website is a plain folder with `index.html` and its pictures. No lock-in, no account, no telemetry.
 
+When you want more, switch to **Advanced** to see the code and use all the tools: source editing with colour highlighting, framework tabs for Bootstrap, Tailwind CSS, Bulma and Pico, a style panel, JavaScript in the preview, and more export formats.
 
-![Main window: code and live preview](docs/screenshots/01-hovedvindue.png)
+![Ready-made pages to start from](docs/screenshots/02-skabeloner.png)
 
 | | |
 | --- | --- |
-| ![Visual editing and the style panel](docs/screenshots/02-visuel-redigering-og-stilpanel.png) | ![Bootstrap tabs](docs/screenshots/03-bootstrap-faner.png) |
-| ![Tailwind CSS](docs/screenshots/04-tailwind.png) | ![Scroll animation](docs/screenshots/05-scroll-animation.png) |
-| ![Phone width](docs/screenshots/06-telefonbredde.png) | ![Dark theme](docs/screenshots/07-moerkt-tema.png) |
+| ![Edit directly in the page with the small toolbar](docs/screenshots/03-ret-direkte-i-siden.png) | ![Insert headings, pictures, buttons and columns](docs/screenshots/04-indsaet.png) |
+| ![Colour themes for the whole page](docs/screenshots/05-farver.png) | ![Look panel for the selected part](docs/screenshots/06-udseende.png) |
+| ![Check the page, with Fix buttons](docs/screenshots/08-tjek-siden.png) | ![See the page as on a phone](docs/screenshots/10-telefon.png) |
+| ![Advanced: code and page side by side](docs/screenshots/11-avanceret.png) | ![Advanced: Bootstrap tabs](docs/screenshots/12-bootstrap.png) |
 
 ## Features
 
+### Simple (default)
+
+- **Templates:** an empty page, a personal page, a café or shop, a club and a portfolio.
+- **Type in the page** as in Word. Click something to select it; the breadcrumbs below show where you are (Page › Top banner › Heading).
+- **Insert:** heading, text, list, quote, picture, video (YouTube, Vimeo), button, link, two or three columns, cards, table, divider and space. New parts go just below what you clicked.
+- **Small toolbar** next to the selection: bold, italic, smaller and larger text, colour, alignment, look, move up and down, copy, delete. Double-click a picture to change it.
+- **Design for the whole page:** colour themes, fonts, space, corners, shadow and page width. **Look** changes only the selected part.
+- **Effects:** slide in on scroll, hover effects, repeating motion, gradients, shadows, glass, pin to top and a reading bar, applied to the selection.
+- **Save as a website:** the first save creates a folder with `index.html` and a `billeder` folder for pictures. Pictures are copied in automatically, so they always work.
+- **Check the page** in plain language, with **Fix** for missing title, language, description and picture descriptions.
+- **Help on the spot:** a short tour, a **?** on every ribbon group, and Save as PDF and earlier versions under File.
+
+### Advanced
+
 - **Three views:** HTML source with colour highlighting, source and live preview side by side, and the page at full size. Preview widths for desktop, tablet and phone.
-- **Edit in the preview:** click an element to select it (breadcrumbs show where you are), type directly in the page, and the change is written back to the code. Click in the code and the matching element is highlighted in the page.
-- **Safe by default:** the preview runs in an isolated frame and no script in the page runs. Turn JavaScript on per file when you trust it, or choose *Known* to allow only scripts from known libraries (Bootstrap, Tailwind and others).
-- **Style panel:** colours, text, spacing, borders and layout for the selected element, written as inline style or as a rule for the class, id or tag.
-- **Framework tabs:** when TagNote finds Bootstrap, Tailwind CSS, Bulma or Pico in the page, extra tabs appear. Bootstrap, Tailwind and Bulma get *Build* and *Style* tabs (components, grid builder, class pickers with margin and padding box, breakpoints). Pico gets one tab (theme, components). Class lists are read from the frameworks' own CSS (`npm run catalogs`).
-- **Effects:** scroll animations (`animation-timeline`), hover transitions, keyframe animations, gradients, layered shadows, glass, scroll snap, sticky elements, reading progress. Each has a live demo and produces plain CSS in a marked `<style id="tn-effects">` block, wrapped for `prefers-reduced-motion`.
-- **Design tools:** colour palette in OKLCH, fluid sizes with `clamp()`, CSS variables editor, font pairs, page check (alt texts, title, language, duplicate ids, unknown framework classes).
-- **Insert:** tables, images, links, sections, forms, media, meta tags, stylesheets, scripts, symbols, a blank HTML5 page.
+- **Edit in the preview** and the change is written back to the code. Click in the code and the matching element is highlighted in the page.
+- **Safe by default:** the preview runs in an isolated frame and no script in the page runs. Turn JavaScript on per file, or choose *Known* to allow only scripts from known libraries.
+- **Style panel** for the selected element, written as inline style or as a rule for the class, id or tag.
+- **Framework tabs** for Bootstrap, Tailwind CSS, Bulma and Pico: components, grid builder, class pickers with margin and padding box, breakpoints. Class lists are read from the frameworks' own CSS (`npm run catalogs`).
+- **Effects and design tools** with live demos and plain CSS output, a colour palette in OKLCH, fluid sizes with `clamp()`, CSS variables and font pairs.
 - **Code tools:** auto-close tags, auto-indent, format code, comment in and out, wrap in tag, find and replace with regular expressions, outline panel.
-- **Export:** PDF, clean HTML, Markdown (for MarkNote) and plain text. Tabs, version history with automatic snapshots, themes (Light, Dark, Sepia, Word Blue).
+- **Export:** PDF, clean HTML, Markdown (for MarkNote) and plain text.
 
 Built on Electron 45 (Chromium 156), so modern CSS works in the preview.
 
@@ -32,7 +46,7 @@ Built on Electron 45 (Chromium 156), so modern CSS works in the preview.
 
 Get the latest Windows build from the [Releases page](https://github.com/Cphmartinus/tagnote/releases/latest):
 
-- `TagNote-Setup-<version>.exe` (**recommended**): installs TagNote, opens `.html` files with a double-click, and can install later updates from *Help → Search for updates*.
+- `TagNote-Setup-<version>.exe` (**recommended**): installs TagNote, opens `.html` files with a double-click, and can install later updates from *Help → Search for updates*. Install it over an earlier version; your settings are kept.
 - `TagNote-<version>-portable.exe`: runs without installation. It unpacks itself on every start, so it starts more slowly.
 
 The executables are not code-signed, so Windows SmartScreen may show a warning the first time. Choose **More info → Run anyway**. Releases are built from this repository by GitHub Actions, see [`.github/workflows/build.yml`](.github/workflows/build.yml).
@@ -69,6 +83,7 @@ Danish and English are complete. Texts that TagNote shares with MarkNote are tra
 - Visual editing rewrites the HTML in standard form (attribute quotes, entities, void tags) for the page, not only the part you changed. Use the source view when exact formatting matters.
 - Frameworks loaded from a CDN need an internet connection in the preview. For offline use, link a local copy.
 - Visual editing and the style panel need JavaScript to be off, because scripts can change the page while you edit it.
+- The interface texts that are new in TagNote are in Danish and English. In the other 11 languages they are shown in English.
 
 ## License
 

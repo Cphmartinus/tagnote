@@ -22,23 +22,33 @@
   }
 
   async function fxDialog(def) {
+    /* I Enkel gives effekten til det markerede element; man skal ikke skrive en CSS-vælger */
+    const simple = TN.level && TN.level() === 'simple' && def.sel && def.simpleTarget !== false;
+    let target = null, simpleSel = null;
+    if (simple) {
+      target = TN.sel.el;
+      if (!target || !TN.preview.doc() || /^(HTML|BODY|HEAD)$/.test(target.tagName)) { TN.toast(t('Klik først på det i siden, der skal have effekten.'), 4000); return; }
+      simpleSel = '.tn-' + def.title.toLowerCase().replace(/æ/g, 'ae').replace(/ø/g, 'oe').replace(/å/g, 'aa').replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+    }
     const wrapEl = el('div', 'fxdlg');
     const left = el('div', 'fxleft'), right = el('div', 'fxright');
     const els = {};
     const redraw = () => {
       const v = {}; for (const k of Object.keys(els)) v[k] = val(els[k]);
-      const sel = els.__sel ? els.__sel.value.trim() || def.sel : null;
+      const sel = simpleSel || (els.__sel ? els.__sel.value.trim() || def.sel : null);
       const css = def.css(v, sel);
       code.value = css;
       demoStyle.textContent = def.css(v, '.fxdemo ' + (def.demoSel || '.it'));
       demoBox.innerHTML = def.demo(v);
       if (def.onDraw) def.onDraw(demoBox, v);
     };
-    if (def.intro) left.append(Object.assign(el('p', 'muted small'), { textContent: t(def.intro) }));
+    const intro = simple && def.simpleIntro ? def.simpleIntro : def.intro;
+    if (intro) left.append(Object.assign(el('p', 'muted small'), { textContent: t(intro) }));
     for (const f of def.fields) { const { l, i } = fieldEl(f, redraw); els[f.id] = i; left.append(l); }
-    if (def.sel) {
-      const { l, i } = fieldEl({ label: 'Vælger (hvem rammes)', type: 'text', value: defaultSelector(def.sel) }, redraw); els.__sel = i; left.append(l);
+    if (def.sel && !simple) {
+      const { l, i } = fieldEl({ label: 'Vælger (hvem rammes)', type: 'text', value: defaultSelector(def.sel) }, redraw); els.__sel = i; l.classList.add('adv'); left.append(l);
     }
+    if (simple) left.append(Object.assign(el('p', 'muted small'), { textContent: t('Effekten gives til: {0}', TN.friendly(target)) }));
     const demoBox = el('div', 'fxdemo' + (def.demoCls ? ' ' + def.demoCls : '')); const demoStyle = el('style');
     right.append(Object.assign(el('div', 'fxcap2'), { textContent: t('Eksempel') }), demoBox, demoStyle);
     const code = el('textarea', 'dg-code fxcode'); code.readOnly = true; code.rows = 9; code.spellcheck = false;
@@ -50,11 +60,16 @@
     const main = el('div', 'fxmain'); main.append(left, right);
     wrapEl.append(main, code, foot);
     redraw();
-    const r = await TN.modal({ title: t(def.title), body: wrapEl, cls: 'fxwin', buttons: [{ text: t('Annuller') }, { text: t('Indsæt i siden'), primary: true, value: () => ({ css: code.value, sel: els.__sel ? els.__sel.value.trim() : '', v: Object.fromEntries(Object.keys(els).map((k) => [k, val(els[k])])) }) }] });
+    const r = await TN.modal({ title: t(simple && SIMPLE_TITLES[def.title] || def.title), body: wrapEl, cls: 'fxwin', buttons: [{ text: t('Annuller') }, { text: t('Indsæt i siden'), primary: true, value: () => ({ css: code.value, sel: els.__sel ? els.__sel.value.trim() : '', v: Object.fromEntries(Object.keys(els).map((k) => [k, val(els[k])])) }) }] });
     if (!r) return;
-    if (def.apply) await def.apply(r); else TN.src.styleBlock('tn-effects', r.css);
+    if (simple) {
+      const cls = simpleSel.slice(1);
+      if (target.isConnected && !target.classList.contains(cls)) { target.classList.add(cls); TN.preview.commit(true); }
+      TN.src.styleBlock('tn-effects', r.css);
+    } else if (def.apply) await def.apply(r); else TN.src.styleBlock('tn-effects', r.css);
     TN.toast(t('CSS indsat i <style id="tn-effects">'), 3200);
   }
+  const SIMPLE_TITLES = { 'Scroll-animation': 'Glid ind ved rulning', 'Overgang ved hover': 'Når musen er over', Animation: 'Gentaget bevægelse', Gradient: 'Farveovergang', 'Fastholdt element': 'Fastgør øverst', 'Læsefremgang': 'Læsebjælke', Glaseffekt: 'Glas' };
   const reduce = (inner) => '@media (prefers-reduced-motion: no-preference) {\n' + inner.replace(/^/gm, '  ') + '\n}';
   const items = (n, cls = 'it') => Array.from({ length: n }, (_, i) => '<div class="' + cls + '">' + t('Element') + ' ' + (i + 1) + '</div>').join('');
 
@@ -79,7 +94,7 @@
   }
   function scrollDemo() { return '<div class="fxscroll"><p class="muted small">' + esc(t('Rul i boksen for at se effekten')) + '</p>' + items(6) + '<p class="muted small">' + esc(t('Slut')) + '</p></div>'; }
   TN.cmds.fxScroll = () => fxDialog({
-    title: 'Scroll-animation', sel: '.reveal', demoSel: '.it', caniuse: 'animation-timeline', demoCls: 'scrolldemo',
+    title: 'Scroll-animation', sel: '.reveal', simpleIntro: 'Det markerede glider eller toner ind, når man ruller ned til det.', demoSel: '.it', caniuse: 'animation-timeline', demoCls: 'scrolldemo',
     intro: 'Elementet animeres, mens man ruller forbi det. Ren CSS uden JavaScript. Browsere uden støtte viser bare elementet som normalt.',
     fields: [
       { id: 'fx', label: 'Effekt', type: 'select', options: Object.entries(SCROLL_FX).map(([k, a]) => [k, a[0]]), value: 'up' },
@@ -152,7 +167,7 @@
   TN.cmds.fxGradient = () => fxDialog({
     title: 'Gradient', sel: '.gradient', demoSel: '.big', caniuse: 'css-gradients', demoCls: 'fxbig',
     fields: [
-      { id: 'type', label: 'Type', type: 'select', options: [['linear', 'Lineær'], ['radial', 'Radial'], ['conic', 'Konisk']], value: 'linear' },
+      { id: 'type', label: 'Type', type: 'select', options: [['linear', 'Lige (fra side til side)'], ['radial', 'Rund (fra midten)'], ['conic', 'Rundt om (som et farvehjul)']], value: 'linear' },
       { id: 'angle', label: 'Vinkel', type: 'range', min: 0, max: 360, step: 5, value: 135, unit: '°' },
       { id: 'c1', label: 'Farve 1', type: 'color', value: '#2b579a' },
       { id: 'c2', label: 'Farve 2', type: 'color', value: '#7bc4e8' },
@@ -225,7 +240,7 @@
 
   /* ======================= læsefremgang ======================= */
   TN.cmds.fxProgress = () => fxDialog({
-    title: 'Læsefremgang', sel: '.fremgang', demoSel: '.bar', caniuse: 'animation-timeline', demoCls: 'fxprogressbox',
+    title: 'Læsefremgang', sel: '.fremgang', simpleTarget: false, demoSel: '.bar', caniuse: 'animation-timeline', demoCls: 'fxprogressbox',
     intro: 'En bjælke øverst, der vokser, mens man ruller. Ren CSS. Elementet <div class="fremgang"></div> indsættes øverst i siden.',
     fields: [
       { id: 'c', label: 'Farve', type: 'color', value: '#2b579a' },
@@ -330,20 +345,87 @@
 
   /* ======================= kontrol ======================= */
   const frameworkLoad = (id) => (TN.fw ? TN.fw.refresh : null);
-  TN.cmds.lint = async () => {
-    const list = TN.lint(ed.value);
-    const body = el('div', 'lintlist');
+  /* Kontrol af siden: almindeligt dansk i Enkel, og "Ret" til det, TagNote kan rette selv */
+  const PLAIN = {
+    'Mangler <!DOCTYPE html>. Browseren går i quirks-tilstand, og layoutet kan opføre sig anderledes.': 'Siden mangler en startlinje, der fortæller browseren, at den er moderne. Uden den kan siden se forkert ud.',
+    'Mangler lang på <html>. Skærmlæsere og oversættelse har brug for sproget.': 'Siden fortæller ikke, hvilket sprog den er skrevet på. Det har skærmlæsere og oversættelse brug for.',
+    'Mangler <meta charset="utf-8">. Specialtegn kan blive vist forkert.': 'Siden fortæller ikke, hvordan æ, ø og å skal vises. De kan blive til mærkelige tegn.',
+    'Mangler <meta name="viewport">. Siden vises som en zoomet skrivebordsside på telefoner.': 'Siden er ikke sat op til telefoner, så den bliver meget lille på en mobil.',
+    'Mangler <title> eller titlen er tom.': 'Siden har ingen titel. Titlen vises i browserens fane og i Google.',
+    'Mangler <meta name="description">. Søgemaskiner bruger den som beskrivelse.': 'Siden har ingen beskrivelse til Google.',
+    'Billedet mangler alt-tekst: {0}': 'Et billede mangler en beskrivelse: {0}',
+    'Link uden href.': 'Et link fører ingen steder hen.',
+    'Link uden mål (href er tom eller #).': 'Et link fører ingen steder hen.',
+    'Linket har ingen tekst, som skærmlæsere kan læse op.': 'Et link har ingen tekst.',
+    'target="_blank" bør have rel="noopener".': 'Et link åbner et nyt vindue på en måde, der ikke er helt sikker.',
+    'Knappen har ingen tekst eller aria-label.': 'En knap har ingen tekst.',
+    'Formularfeltet har ingen label.': 'Et felt i en formular har intet navn.',
+    'id="{0}" bruges flere gange.': 'To dele af siden har samme navn ({0}). Links til dem kan hoppe forkert.',
+    'Siden har ingen <h1>.': 'Siden har ingen hovedoverskrift.',
+    'Siden har {0} <h1>-overskrifter.': 'Siden har {0} hovedoverskrifter. Normalt har en side kun én.',
+    'Overskriftsniveau springes over: <h{0}> efterfølges af <h{1}>.': 'En overskrift springer et niveau over. Det gør siden sværere at overskue for skærmlæsere.',
+    '<{0}> er forældet. Brug CSS i stedet.': 'Siden bruger gammel kode (<{0}>), som ikke bør bruges mere.',
+  };
+  const K = { doctype: 'Mangler <!DOCTYPE html>. Browseren går i quirks-tilstand, og layoutet kan opføre sig anderledes.', lang: 'Mangler lang på <html>. Skærmlæsere og oversættelse har brug for sproget.', charset: 'Mangler <meta charset="utf-8">. Specialtegn kan blive vist forkert.', viewport: 'Mangler <meta name="viewport">. Siden vises som en zoomet skrivebordsside på telefoner.', title: 'Mangler <title> eller titlen er tom.', desc: 'Mangler <meta name="description">. Søgemaskiner bruger den som beskrivelse.', alt: 'Billedet mangler alt-tekst: {0}', blank: 'target="_blank" bør have rel="noopener".' };
+  async function domEl(x) {
+    await TN.ensureEditable();
+    const d = TN.preview.doc(); return d ? d.querySelectorAll(x.tag)[x.idx] : null;
+  }
+  const FIX = {
+    [K.doctype]: async () => TN.src.replace(0, 0, '<!DOCTYPE html>\n'),
+    [K.lang]: async () => TN.htmlAttr('lang', window.WDi18n.lang()),
+    [K.charset]: async () => TN.src.headInsert('<meta charset="utf-8">'),
+    [K.viewport]: async () => TN.src.headInsert('<meta name="viewport" content="width=device-width, initial-scale=1">'),
+    [K.title]: async () => {
+      const r = await TN.ask({ title: 'Sidens titel', intro: t('Titlen vises i browserens fane og som overskrift i Google. Skriv fx navnet på din forretning.'), fields: [{ id: 'v', label: 'Titel', value: '' }] });
+      if (!r || !r.v) return;
+      const m = /(<title[^>]*>)([^<]*)(<\/title>)/i.exec(ed.value);
+      if (m) TN.src.replace(m.index + m[1].length, m.index + m[1].length + m[2].length, esc(r.v)); else TN.src.headInsert('<title>' + esc(r.v) + '</title>');
+    },
+    [K.desc]: async () => {
+      const r = await TN.ask({ title: 'Beskrivelse til Google', intro: t('Skriv en eller to sætninger om, hvad siden handler om. Google viser den under titlen.'), fields: [{ id: 'v', label: 'Beskrivelse', type: 'textarea', value: '' }] });
+      if (r && r.v) TN.src.headInsert('<meta name="description" content="' + TN.escAttr(r.v) + '">');
+    },
+    [K.alt]: async (x) => {
+      const e = await domEl(x); if (!e) return;
+      TN.sel.set(e); e.scrollIntoView({ block: 'center' });
+      const r = await TN.ask({ title: 'Beskriv billedet', intro: t('Skriv kort, hvad billedet viser. Beskrivelsen læses op for blinde og bruges af Google.'), fields: [{ id: 'v', label: 'Beskrivelse', value: '' }] });
+      if (r && r.v) TN.elOps.setAttr('alt', r.v);
+    },
+    [K.blank]: async (x) => { const e = await domEl(x); if (e) { TN.sel.set(e); TN.elOps.setAttr('rel', 'noopener'); } },
+  };
+  function lintRows(body, close) {
+    body.innerHTML = '';
+    const simple = TN.level && TN.level() === 'simple';
+    const list = TN.lint(ed.value).filter((x) => !(simple && /^Ukendt /.test(x.key)));
     const counts = { fejl: 0, advarsel: 0, info: 0 }; for (const x of list) counts[x.level]++;
-    const head = el('p', 'lintsum'); head.textContent = list.length ? t('{0} fejl · {1} advarsler · {2} bemærkninger', counts.fejl, counts.advarsel, counts.info) : t('Ingen fund. Siden består kontrollen.');
+    const head = el('p', 'lintsum');
+    head.textContent = !list.length ? t('Ingen fund. Siden består kontrollen.') : simple ? t('TagNote fandt {0} ting, der kan forbedres.', list.length) : t('{0} fejl · {1} advarsler · {2} bemærkninger', counts.fejl, counts.advarsel, counts.info);
     body.append(head);
     for (const x of list) {
-      const r = el('button', 'lintrow ' + x.level);
-      r.innerHTML = '<i class="lv">' + esc(t({ fejl: 'Fejl', advarsel: 'Advarsel', info: 'Info' }[x.level])) + '</i><span></span>';
-      r.querySelector('span').textContent = t(x.key, ...(x.args || []));
-      if (x.tag) { r.title = t('Gå til i koden'); r.onclick = () => { const rg = TN.map.rangeOf(ed.value, x.tag, x.idx); if (rg) { document.querySelector('#modalRoot .overlay').remove(); if (state.mode === 'read') TN.setMode('split'); ed.focus(); ed.setSelectionRange(rg.start, rg.openEnd); TN.map.scrollToOffset(rg.start); } }; }
+      const r = el('div', 'lintrow ' + x.level);
+      const label = simple ? { fejl: 'Vigtigt', advarsel: 'Bør rettes', info: 'Godt at vide' }[x.level] : { fejl: 'Fejl', advarsel: 'Advarsel', info: 'Info' }[x.level];
+      r.innerHTML = '<i class="lv">' + esc(t(label)) + '</i><span></span><span class="lintbtns"></span>';
+      r.querySelector('span').textContent = t(simple && PLAIN[x.key] ? PLAIN[x.key] : x.key, ...(x.args || []));
+      const btns = r.querySelector('.lintbtns');
+      if (FIX[x.key]) { const b = el('button', 'btn primary'); b.textContent = t('Ret'); b.onclick = async () => { await FIX[x.key](x); setTimeout(() => lintRows(body, close), 350); }; btns.append(b); }
+      if (x.tag) {
+        const b = el('button', 'btn'); b.textContent = t('Vis');
+        b.onclick = async () => {
+          if (simple) { const e = await domEl(x); if (e) { close(); TN.sel.set(e); e.scrollIntoView({ block: 'center' }); } return; }
+          const rg = TN.map.rangeOf(ed.value, x.tag, x.idx);
+          if (rg) { close(); if (state.mode === 'read') TN.setMode('split'); ed.focus(); ed.setSelectionRange(rg.start, rg.openEnd); TN.map.scrollToOffset(rg.start); }
+        };
+        btns.append(b);
+      }
       body.append(r);
     }
-    await TN.modal({ title: t('Kontrol af siden'), body, wide: true, buttons: [{ text: t('Luk'), primary: true }] });
+  }
+  TN.cmds.lint = async () => {
+    const body = el('div', 'lintlist');
+    const close = () => { const o = document.querySelector('#modalRoot .overlay'); if (o) o.querySelector('.foot .btn').click(); };
+    lintRows(body, close);
+    await TN.modal({ title: t(TN.level && TN.level() === 'simple' ? 'Tjek siden' : 'Kontrol af siden'), body, wide: true, buttons: [{ text: t('Luk'), primary: true }] });
   };
 
   /* ======================= støtteoplysning ======================= */

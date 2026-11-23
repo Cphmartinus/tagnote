@@ -34,8 +34,8 @@
     <button class="tab" data-tab="view" role="tab">Visning</button>
     <button class="tab" data-tab="design" role="tab">Design</button>
     <button class="tab" data-tab="effects" role="tab">Effekter</button>
-    <span id="fwTabs"></span>
-    <button class="tab" data-tab="tools" role="tab">Eksport &amp; Værktøjer</button>
+    <span id="fwTabs" class="adv"></span>
+    <button class="tab adv" data-tab="tools" role="tab">Eksport &amp; Værktøjer</button>
     <button class="tab" data-tab="help" role="tab">Hjælp</button>
     <span class="spacer"></span>
     <button id="collapseBtn" class="qb" data-cmd="toggleRibbon" data-tip="Skjul båndet|Ctrl+F1"><i data-i="chevup"></i></button>
@@ -48,7 +48,8 @@
     <div class="panel" data-panel="file" hidden>
       <div class="group">
         <div class="items">
-          <button class="rb big" data-cmd="new" data-tip="Nyt dokument|Ctrl+N"><i data-i="new"></i><span>Ny</span></button>
+          <button class="rb big" data-cmd="new" data-tip="Ny side|Ctrl+N|Vælg en færdig side at starte fra, eller en tom side"><i data-i="new"></i><span>Ny</span></button>
+          <button class="rb big adv" data-cmd="newTemplate" data-tip="Ny fra skabelon|Café, forening, portfolio og flere færdige sider"><i data-i="page"></i><span>Fra skabelon</span></button>
           <button class="rb big" data-cmd="open" data-tip="Åbn en HTML-fil|Ctrl+O"><i data-i="open"></i><span>Åbn</span></button>
           <button class="rb big" data-cmd="save" data-tip="Gem|Ctrl+S"><i data-i="save"></i><span>Gem</span></button>
           <button class="rb big" data-cmd="saveAs" data-tip="Gem som…|Ctrl+Shift+S"><i data-i="saveas"></i><span>Gem som</span></button>
@@ -61,7 +62,15 @@
       </div>
       <div class="group">
         <div class="items">
+          <button class="rb big" data-cmd="exportPdf" data-tip="Gem som PDF|En kopi af siden, du kan sende eller udskrive"><i data-i="pdf"></i><span>Gem som PDF</span></button>
+          <button class="rb big" data-cmd="history" data-tip="Tidligere versioner|TagNote gemmer automatisk en kopi hvert minut. Her kan du hente en ældre udgave tilbage"><i data-i="history"></i><span>Tidligere versioner</span></button>
+        </div>
+        <div class="label">Del og gendan</div>
+      </div>
+      <div class="group">
+        <div class="items">
           <button class="rb big" data-cmd="reveal" data-tip="Vis filen i Stifinder"><i data-i="open"></i><span>Vis i mappe</span></button>
+          <button class="rb big" data-cmd="settings" data-tip="Indstillinger|Enkel eller avanceret, tema, sprog og opdateringer"><i data-i="sliders"></i><span>Indstillinger</span></button>
           <button class="rb big" data-cmd="about" data-tip="Om TagNote"><i data-i="info"></i><span>Om</span></button>
         </div>
         <div class="label">Info</div>
@@ -74,21 +83,21 @@
         <div class="items col">
           <div class="row">
             <select id="headingSel" class="sel wide" data-tip="Blokformat|Afsnit, overskrifter og boks|<h1>…</h1>">
-              <option value="p">Afsnit</option>
+              <option value="p">Brødtekst</option>
               <option value="h1">Overskrift 1</option><option value="h2">Overskrift 2</option><option value="h3">Overskrift 3</option>
-              <option value="h4">Overskrift 4</option><option value="h5">Overskrift 5</option><option value="h6">Overskrift 6</option>
-              <option value="div">Boks (div)</option>
+              <option class="adv" value="h4">Overskrift 4</option><option class="adv" value="h5">Overskrift 5</option><option class="adv" value="h6">Overskrift 6</option>
+              <option class="adv" value="div">Boks (div)</option>
             </select>
-            <input type="color" id="textColor" class="clr" value="#1b1b1b" data-tip="Tekstfarve|Gælder markeret tekst i visningen">
-            <input type="color" id="bgColor" class="clr" value="#fff3a3" data-tip="Fremhævningsfarve|Baggrund bag markeret tekst">
+            <input type="color" id="textColor" class="clr" value="#1b1b1b" data-tip="Tekstfarve|Farve på den tekst, du har markeret i siden">
+            <input type="color" id="bgColor" class="clr" value="#fff3a3" data-tip="Fremhævningsfarve|Baggrundsfarve bag den tekst, du har markeret, som med en overstregningstusch">
           </div>
           <div class="row">
             <button class="rb sm" data-cmd="bold" data-tip="Fed|Ctrl+B|<strong>tekst</strong>"><b>B</b></button>
             <button class="rb sm" data-cmd="italic" data-tip="Kursiv|Ctrl+I|<em>tekst</em>"><i class="t">I</i></button>
             <button class="rb sm" data-cmd="underline" data-tip="Understreget|Ctrl+U|<u>tekst</u>"><u>U</u></button>
             <button class="rb sm" data-cmd="strike" data-tip="Gennemstreget|Ctrl+Shift+X|<s>tekst</s>"><s>S</s></button>
-            <button class="rb sm" data-cmd="sub" data-tip="Sænket skrift|<sub>tekst</sub>"><span class="sm-t">x<sub>2</sub></span></button>
-            <button class="rb sm" data-cmd="sup" data-tip="Hævet skrift|<sup>tekst</sup>"><span class="sm-t">x<sup>2</sup></span></button>
+            <button class="rb sm adv" data-cmd="sub" data-tip="Sænket skrift|<sub>tekst</sub>"><span class="sm-t">x<sub>2</sub></span></button>
+            <button class="rb sm adv" data-cmd="sup" data-tip="Hævet skrift|<sup>tekst</sup>"><span class="sm-t">x<sup>2</sup></span></button>
           </div>
         </div>
         <div class="label">Tekst</div>
@@ -98,8 +107,8 @@
           <div class="row">
             <button class="rb sm" data-cmd="ul" data-tip="Punktopstilling|Ctrl+Shift+8|<ul><li>…</li></ul>"><i data-i="ul"></i></button>
             <button class="rb sm" data-cmd="ol" data-tip="Nummereret liste|Ctrl+Shift+7|<ol><li>…</li></ol>"><i data-i="ol"></i></button>
-            <button class="rb sm" data-cmd="indent" data-tip="Indryk|Tab"><i data-i="indent"></i></button>
-            <button class="rb sm" data-cmd="outdent" data-tip="Fjern indrykning|Shift+Tab"><i data-i="outdent"></i></button>
+            <button class="rb sm adv" data-cmd="indent" data-tip="Indryk|Tab"><i data-i="indent"></i></button>
+            <button class="rb sm adv" data-cmd="outdent" data-tip="Fjern indrykning|Shift+Tab"><i data-i="outdent"></i></button>
           </div>
           <div class="row">
             <button class="rb sm" data-cmd="alignLeft" data-tip="Venstrejusteret|text-align: left"><i data-i="alignl"></i></button>
@@ -110,7 +119,7 @@
         </div>
         <div class="label">Afsnit</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="quote" data-tip="Citat|Ctrl+Shift+Q|<blockquote>…</blockquote>"><i data-i="quote"></i><span>Citat</span></button>
           <button class="rb big" data-cmd="code" data-tip="Indlejret kode|Ctrl+E|<code>kode</code>"><i data-i="code"></i><span>Kode</span></button>
@@ -119,7 +128,7 @@
         </div>
         <div class="label">Blokke</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="beautify" data-tip="Formatér kode|Ctrl+Shift+F|Rydder op i indrykning og linjeskift"><i data-i="wand"></i><span>Formatér kode</span></button>
           <button class="rb big" data-cmd="toggleComment" data-tip="Kommentér ind/ud|Ctrl+/|<!-- … -->"><i data-i="comment"></i><span>Kommentér</span></button>
@@ -127,11 +136,55 @@
         </div>
         <div class="label">Kode</div>
       </div>
+      <div class="group simple" data-help="selected">
+        <div class="items">
+          <button class="rb big" data-cmd="appearance" data-tip="Udseende|Farve, størrelse, luft og hjørner for det, du har klikket på i siden"><i data-i="sliders"></i><span>Udseende</span></button>
+          <button class="rb big" data-cmd="moveUp" data-tip="Flyt op|Flytter det markerede op forbi det, der står over"><i data-i="up"></i><span>Flyt op</span></button>
+          <button class="rb big" data-cmd="moveDown" data-tip="Flyt ned|Flytter det markerede ned forbi det, der står under"><i data-i="down"></i><span>Flyt ned</span></button>
+          <button class="rb big" data-cmd="duplicate" data-tip="Kopiér|Laver en kopi lige under"><i data-i="copy"></i><span>Kopiér</span></button>
+          <button class="rb big" data-cmd="removeEl" data-tip="Slet|Fjerner det markerede fra siden"><i data-i="trash"></i><span>Slet</span></button>
+        </div>
+        <div class="label">Det markerede</div>
+      </div>
     </div>
 
     <!-- Indsæt -->
     <div class="panel" data-panel="insert" hidden>
-      <div class="group">
+      <div class="group simple" data-help="insertText">
+        <div class="items">
+          <button class="rb big" data-cmd="blkHeading" data-tip="Overskrift|Indsætter en overskrift under det, du har markeret"><i data-i="heading"></i><span>Overskrift</span></button>
+          <button class="rb big" data-cmd="blkText" data-tip="Tekst|Indsætter et nyt afsnit, du kan skrive i"><i data-i="paragraph"></i><span>Tekst</span></button>
+          <button class="rb big" data-cmd="blkList" data-tip="Liste|En punktliste. Tryk Enter for et nyt punkt"><i data-i="ul"></i><span>Liste</span></button>
+          <button class="rb big" data-cmd="blkQuote" data-tip="Citat|Fremhævet citat"><i data-i="quote"></i><span>Citat</span></button>
+        </div>
+        <div class="label">Tekst</div>
+      </div>
+      <div class="group simple" data-help="insertMedia">
+        <div class="items">
+          <button class="rb big" data-cmd="blkImage" data-tip="Billede|Vælg et billede på computeren. Det kopieres med ind i hjemmesidens mappe"><i data-i="image"></i><span>Billede</span></button>
+          <button class="rb big" data-cmd="blkVideo" data-tip="Video|Indsæt en video fra YouTube eller Vimeo med et link"><i data-i="video"></i><span>Video</span></button>
+        </div>
+        <div class="label">Billeder og video</div>
+      </div>
+      <div class="group simple" data-help="insertLinks">
+        <div class="items">
+          <button class="rb big" data-cmd="blkButton" data-tip="Knap|En knap, der fører et sted hen, fx til kontakt eller booking"><i data-i="button"></i><span>Knap</span></button>
+          <button class="rb big" data-cmd="link" data-tip="Link|Markér noget tekst, og gør den til et link|Ctrl+K"><i data-i="link"></i><span>Link</span></button>
+        </div>
+        <div class="label">Knapper og links</div>
+      </div>
+      <div class="group simple" data-help="insertLayout">
+        <div class="items">
+          <button class="rb big" data-cmd="blkCols2" data-tip="To kolonner|To felter ved siden af hinanden. På telefoner kommer de under hinanden"><i data-i="cols2"></i><span>To kolonner</span></button>
+          <button class="rb big" data-cmd="blkCols3" data-tip="Tre kolonner|Tre felter ved siden af hinanden. På telefoner kommer de under hinanden"><i data-i="cols3"></i><span>Tre kolonner</span></button>
+          <button class="rb big" data-cmd="blkCards" data-tip="Kort|Tre bokse med billede, overskrift og tekst, fx til produkter eller ydelser"><i data-i="card"></i><span>Kort</span></button>
+          <button class="rb big" data-cmd="blkTable" data-tip="Tabel|En tabel med rækker og kolonner, fx til priser eller åbningstider"><i data-i="table"></i><span>Tabel</span></button>
+          <button class="rb big" data-cmd="blkHr" data-tip="Skillelinje|En vandret streg mellem to dele af siden"><i data-i="hr"></i><span>Skillelinje</span></button>
+          <button class="rb big" data-cmd="blkSpace" data-tip="Luft|Ekstra tom plads mellem to dele af siden"><i data-i="space"></i><span>Luft</span></button>
+        </div>
+        <div class="label">Opsætning</div>
+      </div>
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="table" data-tip="Tabel|Interaktiv tabelbygger|<table>…</table>"><i data-i="table"></i><span>Tabel</span></button>
           <button class="rb big" data-cmd="image" data-tip="Billede|Vælg fil eller træk og slip. Relativ sti indsættes automatisk|<img src alt>"><i data-i="image"></i><span>Billede</span></button>
@@ -139,7 +192,7 @@
         </div>
         <div class="label">Tabeller, billeder og links</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="menuSections" data-tip="Sektioner|header, nav, main, section, article, aside, footer, div"><i data-i="layout"></i><span>Sektion ▾</span></button>
           <button class="rb big" data-cmd="menuForms" data-tip="Formular|Formular og felter"><i data-i="form"></i><span>Formular ▾</span></button>
@@ -148,7 +201,7 @@
         </div>
         <div class="label">Blokke</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="skeleton" data-tip="Ny HTML5-side|Indsætter en komplet, tom side (erstatter alt)"><i data-i="page"></i><span>Tom side</span></button>
           <button class="rb big" data-cmd="metaTags" data-tip="Metatags|Titel, beskrivelse, viewport, sprog, farve"><i data-i="meta"></i><span>Metatags</span></button>
@@ -157,7 +210,7 @@
         </div>
         <div class="label">Side og head</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="comment" data-tip="Kommentar|Indsætter en kommentar, der ikke vises på siden|<!-- kommentar -->"><i data-i="newcomment"></i><span>Kommentar</span></button>
           <button class="rb big" data-cmd="hr" data-tip="Vandret linje|<hr>"><i data-i="hr"></i><span>Linje</span></button>
@@ -169,7 +222,7 @@
 
     <!-- Visning -->
     <div class="panel" data-panel="view" hidden>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big mode" data-mode="raw" data-tip="Kildekode|Kun HTML-koden med farvemarkering"><i data-i="raw"></i><span>Kode</span></button>
           <button class="rb big mode" data-mode="split" data-tip="Kode og visning|Kode og side ved siden af – holdes synkroniseret"><i data-i="split"></i><span>Kode + visning</span></button>
@@ -180,16 +233,16 @@
       <div class="group">
         <div class="items">
           <button class="rb big dev on" data-w="0" data-tip="Fuld bredde|Siden fylder hele visningen"><i data-i="expand"></i><span>Fuld</span></button>
-          <button class="rb big dev" data-w="1280" data-tip="Skrivebord|1280 px bred"><i data-i="desktop"></i><span>1280</span></button>
-          <button class="rb big dev" data-w="768" data-tip="Tablet|768 px bred"><i data-i="tablet"></i><span>768</span></button>
-          <button class="rb big dev" data-w="390" data-tip="Telefon|390 px bred"><i data-i="phone"></i><span>390</span></button>
-          <div class="items col w-custom">
+          <button class="rb big dev" data-w="1280" data-tip="Skrivebord|1280 px bred"><i data-i="desktop"></i><span class="adv">1280</span><span class="simple">Computer</span></button>
+          <button class="rb big dev" data-w="768" data-tip="Tablet|768 px bred"><i data-i="tablet"></i><span class="adv">768</span><span class="simple">Tablet</span></button>
+          <button class="rb big dev" data-w="390" data-tip="Telefon|390 px bred"><i data-i="phone"></i><span class="adv">390</span><span class="simple">Telefon</span></button>
+          <div class="items col w-custom adv">
             <label class="chk">Bredde <input type="number" id="devW" class="num" min="240" max="3000" step="10" value="1024"> px</label>
           </div>
         </div>
-        <div class="label">Skærmbredde</div>
+        <div class="label"><span class="adv">Skærmbredde</span><span class="simple">Se siden som på</span></div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <div class="items col jsbox">
             <div class="seg" id="jsSeg" role="radiogroup" aria-label="JavaScript i visningen">
@@ -202,7 +255,7 @@
         </div>
         <div class="label">JavaScript i visning</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big theme" data-set-theme="light" data-tip="Lyst tema"><i class="sw sw-light"></i><span>Lys</span></button>
           <button class="rb big theme" data-set-theme="dark" data-tip="Mørkt tema"><i class="sw sw-dark"></i><span>Mørk</span></button>
@@ -211,7 +264,7 @@
         </div>
         <div class="label">Temaer</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items col">
           <label class="chk"><input type="checkbox" id="optEdit" checked> Ret direkte i visningen</label>
           <label class="chk"><input type="checkbox" id="optNav"> Disposition</label>
@@ -220,17 +273,37 @@
         </div>
         <div class="label">Vis</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items col">
           <div class="row"><span class="muted">Zoom</span><input type="range" id="zoom" min="60" max="200" step="10" value="100"><span id="zoomVal" class="muted">100 %</span></div>
         </div>
         <div class="label">Zoom</div>
       </div>
+      <div class="group simple" data-help="code">
+        <div class="items">
+          <button class="rb big" id="codeToggle" data-cmd="toggleCode" data-tip="Vis koden|Viser sidens HTML-kode ved siden af. Du behøver ikke at bruge den"><i data-i="raw"></i><span>Vis koden</span></button>
+        </div>
+        <div class="label">Kode</div>
+      </div>
     </div>
 
     <!-- Design -->
     <div class="panel" data-panel="design" hidden>
-      <div class="group">
+      <div class="group simple" data-help="designPage">
+        <div class="items">
+          <button class="rb big" data-cmd="designColors" data-tip="Farver|Vælg farverne til hele siden"><i data-i="palette"></i><span>Farver</span></button>
+          <button class="rb big" data-cmd="designFonts" data-tip="Skrift|Vælg skrifttype til overskrifter og tekst"><i data-i="font"></i><span>Skrift</span></button>
+          <button class="rb big" data-cmd="designShape" data-tip="Luft og form|Hvor meget luft, hvor runde hjørner og hvor bred siden skal være"><i data-i="spacing"></i><span>Luft og form</span></button>
+        </div>
+        <div class="label">Hele siden</div>
+      </div>
+      <div class="group simple" data-help="selected">
+        <div class="items">
+          <button class="rb big" data-cmd="appearance" data-tip="Udseende|Farve, størrelse, luft og hjørner for det, du har klikket på i siden"><i data-i="sliders"></i><span>Udseende</span></button>
+        </div>
+        <div class="label">Det markerede</div>
+      </div>
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="inspector" data-tip="Stilpanel|Ret farver, tekst, afstande, kanter og layout for det markerede element"><i data-i="sliders"></i><span>Stilpanel</span></button>
           <button class="rb big" data-cmd="selectParent" data-tip="Vælg overordnet element|Alt+↑|Markerer elementet omkring det valgte"><i data-i="up"></i><span>Overordnet</span></button>
@@ -238,7 +311,7 @@
         </div>
         <div class="label">Element</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="vars" data-tip="CSS-variabler|Se og ret --variabler på :root"><i data-i="vars"></i><span>Variabler</span></button>
           <button class="rb big" data-cmd="palette" data-tip="Farvepalet|Lav lyse og mørke nuancer ud fra én farve, som CSS-variabler"><i data-i="palette"></i><span>Farvepalet</span></button>
@@ -246,7 +319,7 @@
         </div>
         <div class="label">Stil for hele siden</div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items">
           <button class="rb big" data-cmd="menuFrameworks" data-tip="Tilføj framework|Bootstrap, Tailwind CSS, Bulma eller Pico. Indsætter det rigtige link i head"><i data-i="boxes"></i><span>Framework ▾</span></button>
           <button class="rb big" data-cmd="menuFonts" data-tip="Skrifttype|Vælg et skrifttypepar og få link og font-family indsat"><i data-i="font"></i><span>Skrifttyper</span></button>
@@ -255,7 +328,7 @@
       </div>
       <div class="group">
         <div class="items">
-          <button class="rb big" data-cmd="lint" data-tip="Kontrollér siden|Finder manglende alt-tekster, titel, sprog, dublerede id'er og ukendte framework-klasser"><i data-i="check"></i><span>Kontrol</span></button>
+          <button class="rb big" data-cmd="lint" data-tip="Tjek siden|Finder ting, der kan gøre siden svær at bruge eller finde, fx billeder uden beskrivelse"><i data-i="check"></i><span class="adv">Kontrol</span><span class="simple">Tjek siden</span></button>
         </div>
         <div class="label">Kvalitet</div>
       </div>
@@ -265,15 +338,15 @@
     <div class="panel" data-panel="effects" hidden>
       <div class="group">
         <div class="items">
-          <button class="rb big" data-cmd="fxScroll" data-tip="Scroll-animation|Elementer, der toner ind, glider eller skalerer, mens man ruller. Ren CSS, ingen JavaScript"><i data-i="scroll"></i><span>Scroll-animation</span></button>
-          <button class="rb big" data-cmd="fxHover" data-tip="Overgang ved hover|Glidende ændring, når musen går hen over et element"><i data-i="hover"></i><span>Hover-overgang</span></button>
-          <button class="rb big" data-cmd="fxKeyframes" data-tip="Animation|Færdige gentagne animationer: puls, svæv, rotér m.fl."><i data-i="anim"></i><span>Animation</span></button>
+          <button class="rb big" data-cmd="fxScroll" data-tip="Scroll-animation|Elementer, der toner ind, glider eller skalerer, mens man ruller. Ren CSS, ingen JavaScript"><i data-i="scroll"></i><span class="adv">Scroll-animation</span><span class="simple">Glid ind ved rulning</span></button>
+          <button class="rb big" data-cmd="fxHover" data-tip="Overgang ved hover|Glidende ændring, når musen går hen over et element"><i data-i="hover"></i><span class="adv">Hover-overgang</span><span class="simple">Når musen er over</span></button>
+          <button class="rb big" data-cmd="fxKeyframes" data-tip="Animation|Færdige gentagne animationer: puls, svæv, rotér m.fl."><i data-i="anim"></i><span class="adv">Animation</span><span class="simple">Gentaget bevægelse</span></button>
         </div>
         <div class="label">Bevægelse</div>
       </div>
       <div class="group">
         <div class="items">
-          <button class="rb big" data-cmd="fxGradient" data-tip="Gradient|Lineær, radial og konisk farveovergang"><i data-i="gradient"></i><span>Gradient</span></button>
+          <button class="rb big" data-cmd="fxGradient" data-tip="Gradient|Lineær, radial og konisk farveovergang"><i data-i="gradient"></i><span class="adv">Gradient</span><span class="simple">Farveovergang</span></button>
           <button class="rb big" data-cmd="fxShadow" data-tip="Skygge|Lagdelte, bløde skygger"><i data-i="shadow"></i><span>Skygge</span></button>
           <button class="rb big" data-cmd="fxGlass" data-tip="Glaseffekt|Frostet baggrund med backdrop-filter"><i data-i="glass"></i><span>Glas</span></button>
         </div>
@@ -281,13 +354,13 @@
       </div>
       <div class="group">
         <div class="items">
-          <button class="rb big" data-cmd="fxSnap" data-tip="Scroll-snap|Sektioner, der låser sig fast, når man ruller"><i data-i="snap"></i><span>Scroll-snap</span></button>
-          <button class="rb big" data-cmd="fxSticky" data-tip="Fastholdt element|position: sticky, fx en menu der bliver stående"><i data-i="pin"></i><span>Fastholdt</span></button>
-          <button class="rb big" data-cmd="fxProgress" data-tip="Læsefremgang|En bjælke øverst, der viser, hvor langt man er nået"><i data-i="progress"></i><span>Læsefremgang</span></button>
+          <button class="rb big adv" data-cmd="fxSnap" data-tip="Scroll-snap|Sektioner, der låser sig fast, når man ruller"><i data-i="snap"></i><span class="adv">Scroll-snap</span><span class="simple">Rul et afsnit ad gangen</span></button>
+          <button class="rb big" data-cmd="fxSticky" data-tip="Fastholdt element|position: sticky, fx en menu der bliver stående"><i data-i="pin"></i><span class="adv">Fastholdt</span><span class="simple">Fastgør øverst</span></button>
+          <button class="rb big" data-cmd="fxProgress" data-tip="Læsefremgang|En bjælke øverst, der viser, hvor langt man er nået"><i data-i="progress"></i><span class="adv">Læsefremgang</span><span class="simple">Læsebjælke</span></button>
         </div>
-        <div class="label">Interaktion uden JavaScript</div>
+        <div class="label"><span class="adv">Interaktion uden JavaScript</span><span class="simple">Rulning</span></div>
       </div>
-      <div class="group">
+      <div class="group adv">
         <div class="items col fxinfo">
           <span class="muted" id="fxSupport">Støtte i visningen kontrolleres…</span>
         </div>
@@ -303,8 +376,10 @@
     <div class="panel" data-panel="help" hidden>
       <div class="group">
         <div class="items">
+          <button class="rb big" data-cmd="tour" data-tip="Rundvisning|En kort tur gennem programmet"><i data-i="tour"></i><span>Rundvisning</span></button>
           <button class="rb big" data-cmd="help" data-tip="Hjælp|F1"><i data-i="help"></i><span>Hjælp</span></button>
-          <button class="rb big" data-cmd="shortcuts" data-tip="Genveje|Oversigt"><i data-i="keyboard"></i><span>Genveje</span></button>
+          <button class="rb big adv" data-cmd="shortcuts" data-tip="Genveje|Oversigt"><i data-i="keyboard"></i><span>Genveje</span></button>
+          <button class="rb big" data-cmd="toggleLevel" data-tip="Enkel eller avanceret|Enkel skjuler kode og fagord. Avanceret viser alle værktøjer"><i data-i="level"></i><span class="simple">Skift til Avanceret</span><span class="adv">Skift til Enkel</span></button>
           <button class="rb big" data-cmd="about" data-tip="Om TagNote|Version og licens"><i data-i="info"></i><span>Om TagNote</span></button>
         </div>
         <div class="label">Hjælp</div>
@@ -406,27 +481,31 @@
           <span id="pvNote" class="pv-note" hidden></span>
           <button class="pvb" id="pvReload" title="Indlæs visningen igen">↻</button>
         </div>
+        <div id="pvBanner" hidden></div>
         <div id="pvscroll">
           <div id="stage"><div id="stageInner"><iframe id="pv" title="Visning" sandbox="allow-same-origin"></iframe></div></div>
           <div id="selbox" hidden><span id="selTag"></span></div>
+          <div id="minibar" hidden></div>
         </div>
         <div id="crumbs"></div>
       </div>
     </div>
     <aside id="insp" hidden></aside>
+    <aside id="look" hidden></aside>
   </main>
 
   <!-- Statuslinje -->
   <footer id="status">
-    <span id="stPos">Ln 1, Kol 1</span>
+    <span id="stPos" class="adv">Ln 1, Kol 1</span>
     <span id="stWords">0 ord</span>
-    <span id="stChars">0 tegn</span>
-    <span id="stPath"></span>
+    <span id="stChars" class="adv">0 tegn</span>
+    <span id="stPath" class="adv"></span>
     <span class="spacer"></span>
-    <button class="sb" id="stJs" data-tip="JavaScript i visningen|Klik for at skifte: slukket, kendte, tændt">JS: Slukket</button>
-    <button class="sb mode" data-mode="raw" data-tip="Kode">Kode</button>
-    <button class="sb mode" data-mode="split" data-tip="Kode og visning">Split</button>
-    <button class="sb mode" data-mode="read" data-tip="Visning">Visning</button>
+    <button class="sb adv" id="stJs" data-tip="JavaScript i visningen|Klik for at skifte: slukket, kendte, tændt">JS: Slukket</button>
+    <button class="sb mode adv" data-mode="raw" data-tip="Kode">Kode</button>
+    <button class="sb mode adv" data-mode="split" data-tip="Kode og visning">Split</button>
+    <button class="sb mode adv" data-mode="read" data-tip="Visning">Visning</button>
+    <button class="sb" id="stLevel" data-cmd="toggleLevel" data-tip="Enkel eller avanceret|Enkel skjuler kode og fagord. Avanceret viser alle værktøjer"><span class="simple">Enkel</span><span class="adv">Avanceret</span></button>
     <select id="langSel" class="sb-sel" title="Sprog"></select>
     <input type="range" id="zoom2" min="60" max="200" step="10" value="100" title="Zoom">
     <span id="zoomVal2">100 %</span>
@@ -452,6 +531,10 @@
 <script src="frameworks.js"></script>
 <script src="inspector.js"></script>
 <script src="effects.js"></script>
+<script src="explain.js"></script>
+<script src="blocks.js"></script>
+<script src="design.js"></script>
+<script src="simple.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

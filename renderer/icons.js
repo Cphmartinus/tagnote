@@ -100,6 +100,13 @@
     window: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/>',
     grid: '<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/>',
     spacing: '<rect x="3" y="3" width="18" height="18" rx="1" stroke-dasharray="2 2"/><rect x="8" y="8" width="8" height="8"/>',
+    heading: T(2, 18, 15, 'H', 800) + '<path d="M15 8h6M15 12h6M15 16h4"/>',
+    paragraph: '<path d="M4 6h16M4 10h16M4 14h16M4 18h10"/>',
+    cols2: '<rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/>',
+    cols3: '<rect x="2.5" y="4" width="5.5" height="16" rx="1"/><rect x="9.25" y="4" width="5.5" height="16" rx="1"/><rect x="16" y="4" width="5.5" height="16" rx="1"/>',
+    space: '<path d="M4 4h16M4 20h16"/><path d="M12 7v10M9 10l3-3 3 3M9 14l3 3 3-3"/>',
+    tour: '<circle cx="12" cy="12" r="9"/><path d="M9.5 15.5l1.5-4.5 4.5-1.5-1.5 4.5z"/>',
+    level: '<path d="M4 18h4v-4H4zM10 18h4v-8h-4zM16 18h4V6h-4z"/>',
     bold: T(6, 18, 18, 'B', 800),
   };
   window.WDicon = (n) =>

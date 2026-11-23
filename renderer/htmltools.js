@@ -237,6 +237,7 @@
   /* ======================= kontrol ======================= */
   function parse(text) { return new DOMParser().parseFromString(text, 'text/html'); }
   function indexOfEl(doc, el) { return Array.prototype.indexOf.call(doc.querySelectorAll(el.tagName.toLowerCase()), el); }
+  const shortSrc = (src) => { src = src || ''; if (/^data:/i.test(src)) return t('indlejret billede'); const n = decodeURIComponent(src.split(/[?#]/)[0].split('/').pop() || src); return n.length > 48 ? n.slice(0, 45) + '…' : n; };
   TN.lint = function (text) {
     const doc = parse(text), out = [];
     const add = (level, key, args, el) => { if (!Array.isArray(args)) { el = args; args = []; } out.push({ level, key, args, tag: el ? el.tagName.toLowerCase() : null, idx: el ? indexOfEl(doc, el) : -1 }); };
@@ -250,7 +251,7 @@
       if (!ti || !ti.textContent.trim()) add('advarsel', 'Mangler <title> eller titlen er tom.', ti);
       if (!doc.querySelector('meta[name="description"]')) add('info', 'Mangler <meta name="description">. Søgemaskiner bruger den som beskrivelse.');
     }
-    doc.querySelectorAll('img').forEach((el) => { if (!el.hasAttribute('alt')) add('fejl', 'Billedet mangler alt-tekst: {0}', [el.getAttribute('src') || '(src)'], el); });
+    doc.querySelectorAll('img').forEach((el) => { if (!el.hasAttribute('alt')) add('fejl', 'Billedet mangler alt-tekst: {0}', [shortSrc(el.getAttribute('src'))], el); });
     doc.querySelectorAll('a').forEach((el) => {
       const h = (el.getAttribute('href') || '').trim();
       if (!el.hasAttribute('href')) add('info', 'Link uden href.', el);

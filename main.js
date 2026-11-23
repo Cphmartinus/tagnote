@@ -374,6 +374,50 @@ function relOrFileUrl(p, docPath) {
   return pathToFileURL(p).href;
 }
 
+/* ---------- hjemmesidemappe og billeder (Enkel) ---------- */
+ipcMain.on('path:documents', (e) => { e.returnValue = app.getPath('documents'); });
+ipcMain.handle('dir:pick', async (_e, start) => {
+  const r = await dialog.showOpenDialog(win, { title: S('dirTitle', 'Vælg mappe'), defaultPath: start || app.getPath('documents'), properties: ['openDirectory', 'createDirectory'] });
+  return r.canceled || !r.filePaths[0] ? null : r.filePaths[0];
+});
+const safeName = (n) => String(n || '').replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '').slice(0, 80) || 'hjemmeside';
+ipcMain.handle('site:create', (_e, { parent, name, content }) => {
+  try {
+    if (!parent || !fs.existsSync(parent)) return { error: 'folder' };
+    const base = safeName(name);
+    let dir = path.join(parent, base), n = 2;
+    while (fs.existsSync(dir) && fs.readdirSync(dir).length) dir = path.join(parent, base + ' (' + n++ + ')');
+    fs.mkdirSync(path.join(dir, 'billeder'), { recursive: true });
+    const file = path.join(dir, 'index.html');
+    fs.writeFileSync(file, content, 'utf8');
+    addRecent(file);
+    return { path: file };
+  } catch (err) { return { error: err.message }; }
+});
+ipcMain.handle('image:choose', async (_e, multi) => {
+  const r = await dialog.showOpenDialog(win, { title: S('imageTitle', 'Indsæt billede'), properties: multi ? ['openFile', 'multiSelections'] : ['openFile'], filters: [{ name: S('imageFilter', 'Billeder'), extensions: IMG_EXT }] });
+  return r.canceled ? [] : r.filePaths;
+});
+/* Kopierer et billede ind i <hjemmesidens mappe>/billeder, så det altid følger med siden */
+ipcMain.handle('image:import', (_e, { src, docPath }) => {
+  try {
+    if (!docPath || !src || !IMG_EXT.includes(extOf(src)) || !fs.statSync(src).isFile()) return { error: 'invalid' };
+    const dir = path.dirname(docPath);
+    let target;
+    if (insideDir(dir, path.resolve(src))) target = path.resolve(src);
+    else {
+      const imgDir = path.join(dir, 'billeder');
+      fs.mkdirSync(imgDir, { recursive: true });
+      const ext = path.extname(src), stem = safeName(path.basename(src, ext)).replace(/\s+/g, '-').toLowerCase();
+      target = path.join(imgDir, stem + ext.toLowerCase());
+      let n = 2;
+      while (fs.existsSync(target) && fs.readFileSync(target).compare(fs.readFileSync(src)) !== 0) target = path.join(imgDir, stem + '-' + n++ + ext.toLowerCase());
+      if (!fs.existsSync(target)) fs.copyFileSync(src, target);
+    }
+    return { rel: path.relative(dir, target).split(path.sep).map(encodeURIComponent).join('/') };
+  } catch (err) { return { error: err.message }; }
+});
+
 /* ---------- versionshistorik ---------- */
 ipcMain.handle('snap:save', (_e, { key, content }) => {
   try {
